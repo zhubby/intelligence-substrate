@@ -2,6 +2,13 @@
 @import "tailwindcss/utilities.css";
 
 @font-face {
+  font-family: "Noto Sans SC";
+  src: url("/fonts/NotoSansSC-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Kevin Sans";
   src: url("/fonts/KevinSans-Regular.woff2") format("woff2");
   font-weight: 400;
@@ -16,8 +23,10 @@
 }
 
 @theme {
-  --font-hand: "Kevin Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-type: "SFMono-Regular", Consolas, monospace;
+  --font-hand:
+    "Kevin Sans", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-type:
+    "SFMono-Regular", Consolas, ui-monospace, "Noto Sans SC", monospace;
   --color-ll-desk: #a8c8bb;
   --color-ll-desk-deep: #93b4a7;
   --color-ll-paper: #f8f5ee;
@@ -46,9 +55,12 @@
   --color-ll-sticky-blue: #bcd8f0;
   --color-ll-blue: #4aa8e8;
   --shadow-ll-hair: 0 1px 1px rgb(42 36 32 / 0.18);
-  --shadow-ll-paper: 0 1px 1px rgb(42 36 32 / 0.18), 0 12px 24px -12px rgb(42 36 32 / 0.3);
-  --shadow-ll-card: 0 1px 2px rgb(42 36 32 / 0.2), 0 7px 14px -9px rgb(42 36 32 / 0.32);
-  --shadow-ll-ink: 0 2px 0 rgb(42 36 32 / 0.2), 0 7px 14px -9px rgb(42 36 32 / 0.45);
+  --shadow-ll-paper:
+    0 1px 1px rgb(42 36 32 / 0.18), 0 12px 24px -12px rgb(42 36 32 / 0.3);
+  --shadow-ll-card:
+    0 1px 2px rgb(42 36 32 / 0.2), 0 7px 14px -9px rgb(42 36 32 / 0.32);
+  --shadow-ll-ink:
+    0 2px 0 rgb(42 36 32 / 0.2), 0 7px 14px -9px rgb(42 36 32 / 0.45);
 }
 
 :root {
@@ -83,7 +95,8 @@
   body {
     color: var(--ll-ink);
     background: var(--ll-desk);
-    font-family: "Kevin Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family:
+      "Kevin Sans", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   }
 
   button,
@@ -101,7 +114,13 @@
 
 .app-shell {
   background-color: var(--ll-desk);
-  background-image: radial-gradient(ellipse at 40% 20%, rgb(255 255 255 / 0.28), transparent 55%), radial-gradient(ellipse at 80% 80%, rgb(42 36 32 / 0.08), transparent 60%);
+  background-image:
+    radial-gradient(
+      ellipse at 40% 20%,
+      rgb(255 255 255 / 0.28),
+      transparent 55%
+    ),
+    radial-gradient(ellipse at 80% 80%, rgb(42 36 32 / 0.08), transparent 60%);
 }
 
 .sidebar {
@@ -129,7 +148,7 @@
 .section-heading h2,
 .goal-header h2,
 .login-form h2 {
-  font-family: "Kevin Sans", "PingFang SC", sans-serif;
+  font-family: "Kevin Sans", "PingFang SC", "Noto Sans SC", sans-serif;
   color: var(--ll-ink);
 }
 
@@ -228,7 +247,7 @@
 .ll-button {
   border-color: var(--ll-ink);
   border-radius: 3px 7px 4px 6px;
-  font-family: "Kevin Sans", "PingFang SC", sans-serif;
+  font-family: "Kevin Sans", "PingFang SC", "Noto Sans SC", sans-serif;
   font-weight: 700;
   box-shadow: var(--shadow-ll-ink);
   transform: rotate(-0.15deg);
@@ -267,7 +286,8 @@
 
 .eyebrow {
   color: var(--ll-marker-dark);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family:
+    "SFMono-Regular", Consolas, ui-monospace, "Noto Sans SC", monospace;
   font-weight: 700;
   letter-spacing: 1.4px;
 }
@@ -336,7 +356,7 @@
   border-radius: 999px;
   background: var(--ll-paper);
   color: var(--ll-ink-soft);
-  font-family: "Kevin Sans", "PingFang SC", sans-serif;
+  font-family: "Kevin Sans", "PingFang SC", "Noto Sans SC", sans-serif;
   font-weight: 700;
 }
 
@@ -473,7 +493,7 @@
 .target-picker,
 .task-editor,
 .criterion-editor {
-  font-family: "Kevin Sans", "PingFang SC", sans-serif;
+  font-family: "Kevin Sans", "PingFang SC", "Noto Sans SC", sans-serif;
 }
 
 .field input,
@@ -522,7 +542,9 @@
   background: var(--ll-paper);
   border: 1.5px solid var(--ll-ink);
   border-radius: 2px 9px 4px 7px;
-  box-shadow: 8px 10px 0 rgb(42 36 32 / 0.12), var(--shadow-ll-paper);
+  box-shadow:
+    8px 10px 0 rgb(42 36 32 / 0.12),
+    var(--shadow-ll-paper);
 }
 
 /* Radix portals the content beside the overlay rather than inside it. Keep
@@ -544,7 +566,7 @@
 }
 
 .modal > header h2 {
-  font-family: "Kevin Sans", "PingFang SC", sans-serif;
+  font-family: "Kevin Sans", "PingFang SC", "Noto Sans SC", sans-serif;
 }
 
 .toast {
@@ -558,7 +580,13 @@
 .login-page {
   min-height: 100vh;
   background: var(--ll-desk);
-  background-image: radial-gradient(ellipse at 28% 24%, rgb(255 255 255 / 0.25), transparent 45%), radial-gradient(ellipse at 85% 80%, rgb(42 36 32 / 0.08), transparent 55%);
+  background-image:
+    radial-gradient(
+      ellipse at 28% 24%,
+      rgb(255 255 255 / 0.25),
+      transparent 45%
+    ),
+    radial-gradient(ellipse at 85% 80%, rgb(42 36 32 / 0.08), transparent 55%);
 }
 
 .login-story {

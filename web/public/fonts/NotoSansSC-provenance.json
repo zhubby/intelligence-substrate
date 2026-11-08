@@ -1,0 +1,11 @@
+{
+  "sourceRepository": "https://github.com/notofonts/noto-cjk",
+  "sourceCommit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
+  "sourcePath": "Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
+  "sourceSHA256": "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b",
+  "output": "NotoSansSC-Regular.woff2",
+  "sha256": "f786807bc421d90a9d0a45b446b819306031017b7f6acc1444514e32f59251e3",
+  "bytes": 11429108,
+  "conversion": "fontTools 4.68.0 WOFF2 lossless compression; full character map retained",
+  "license": "NotoSansSC-LICENSE.txt"
+}

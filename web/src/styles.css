@@ -6,6 +6,7 @@
     "Segoe UI",
     "PingFang SC",
     "Microsoft YaHei",
+    "Noto Sans SC",
     sans-serif;
   color: #243432;
   background: #f7f8f7;
@@ -223,7 +224,9 @@ small {
 .mono,
 code,
 pre {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, "Noto Sans SC",
+    monospace;
 }
 .muted {
   color: var(--muted);
@@ -697,7 +700,7 @@ pre {
   place-items: center;
   border: 1px solid #e5eae6;
   border-radius: 50%;
-  font-family: monospace;
+  font-family: ui-monospace, "Noto Sans SC", monospace;
   font-size: 9px;
   flex-shrink: 0;
 }
@@ -820,7 +823,7 @@ pre {
   border-radius: 5px;
   background: #f3f6f3;
   color: #8fa095;
-  font-family: monospace;
+  font-family: ui-monospace, "Noto Sans SC", monospace;
   font-size: 10px;
   width: 24px;
   height: 25px;
@@ -1121,7 +1124,7 @@ pre {
 .task-step {
   width: 21px;
   color: #9eaaa0;
-  font-family: monospace;
+  font-family: ui-monospace, "Noto Sans SC", monospace;
   font-size: 10px;
 }
 .plan-task strong {
@@ -1717,7 +1720,7 @@ td small {
   display: grid;
   place-items: center;
   font-size: 10px;
-  font-family: monospace;
+  font-family: ui-monospace, "Noto Sans SC", monospace;
   margin-bottom: 12px;
 }
 .role-strip strong {
