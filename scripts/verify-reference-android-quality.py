@@ -27,7 +27,7 @@ import zipfile
 from android_quality_common import (
     sha, validate_apk, source_snapshot, device_lock, require_free_port, package_path,
     require_absent_package, installed_apk_digest, install_owned_package,
-    prepare_install_apk, validate_signature, command,
+    prepare_install_apk, validate_signature, command, tool_command,
 )
 
 
@@ -138,7 +138,7 @@ def main():
     def start_backend():
         nonlocal child
         require_free_port(args.api_port)
-        child = subprocess.Popen(['rtk', 'proxy', str(root / 'api')], stdout=subprocess.DEVNULL, stderr=api_log,
+        child = subprocess.Popen(tool_command([root / 'api']), stdout=subprocess.DEVNULL, stderr=api_log,
             start_new_session=True, env={**os.environ, 'APP_MODE': metadata['mode'], 'APP_LISTEN': '127.0.0.1:' + str(args.api_port),
             'APP_STATE_FILE': str(root / 'state.json'), 'APP_SLOTS': json.dumps([{'id': 'first', 'startsAt': '2026-12-01T09:00:00+08:00', 'reserved': False}])})
         deadline = time.monotonic() + 12

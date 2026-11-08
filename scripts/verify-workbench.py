@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import shlex
+import shutil
 import socket
 import subprocess
 import tempfile
@@ -37,7 +38,7 @@ def main():
     else:
         (repo / "work").mkdir(exist_ok=True)
         root = Path(tempfile.mkdtemp(prefix="workbench-check-", dir=repo / "work"))
-    prefix = [] if os.environ.get("CI") else ["rtk", "proxy"]
+    prefix = ["rtk", "proxy"] if shutil.which("rtk") else []
     browser = os.environ.get("IS_BROWSER_EXECUTABLE")
     chrome = Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
     if not browser and chrome.is_file():

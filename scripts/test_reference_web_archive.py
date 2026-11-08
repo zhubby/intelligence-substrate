@@ -3,6 +3,7 @@ import io
 import gzip
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -28,7 +29,8 @@ class ArchiveTests(unittest.TestCase):
         return file
 
     def run_archive(self, archive, dest, *options):
-        result = subprocess.run(['rtk', 'proxy', 'python3', str(SCRIPT), '--artifact', str(archive), '--destination', str(dest), *options],
+        prefix = ['rtk', 'proxy'] if shutil.which('rtk') else []
+        result = subprocess.run(prefix + ['python3', str(SCRIPT), '--artifact', str(archive), '--destination', str(dest), *options],
                                 capture_output=True, text=True)
         if result.returncode:
             self.assertIn('invalid Web archive:', result.stderr)

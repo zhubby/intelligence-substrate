@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   go:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     services:
       postgres:
@@ -58,7 +58,7 @@ jobs:
           GOOS=windows GOARCH=amd64 go build ./cmd/...
 
   workbench:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -92,7 +92,7 @@ jobs:
           if-no-files-found: ignore
 
   blueprint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -109,7 +109,7 @@ jobs:
           go -C blueprints/flutter-go/backend test -race ./...
 
   container:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -138,7 +138,7 @@ jobs:
   images:
     needs: [go, workbench, blueprint, container]
     if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read

@@ -159,8 +159,13 @@ def validate_signature(signature, badging, expected=None):
         raise ValueError('release APK requires the exact non-debug v2/v3 certificate and non-debuggable build')
     return {'kind': 'explicit-release-certificate', 'certificateSHA256': expected}
 
+def tool_command(argv):
+    prefix = ['rtk', 'proxy'] if shutil.which('rtk') else []
+    return prefix + list(map(str, argv))
+
+
 def command(argv, **options):
-    proc = subprocess.Popen(['rtk', 'proxy', *map(str, argv)], stdout=subprocess.PIPE,
+    proc = subprocess.Popen(tool_command(argv), stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, start_new_session=True, **options)
     try:
         stdout, stderr = proc.communicate(timeout=60)

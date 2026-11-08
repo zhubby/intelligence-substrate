@@ -17,6 +17,7 @@ import unittest
 import xml.etree.ElementTree as ET
 
 from test_android_device_quality import PROFILE
+from android_quality_common import tool_command
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -36,7 +37,7 @@ class ReferenceHTTPS:
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
             port = probe.getsockname()[1]
-        self.process = subprocess.Popen(['rtk', 'proxy', str(self.binary)], stdout=subprocess.DEVNULL,
+        self.process = subprocess.Popen(tool_command([self.binary]), stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, start_new_session=True, env={**os.environ, 'APP_MODE': self.mode,
                 'APP_LISTEN': '127.0.0.1:' + str(port), 'APP_STATE_FILE': str(self.root / 'state.json'),
                 'APP_SLOTS': json.dumps([{'id': 'first', 'startsAt': '2026-12-01T09:00:00+08:00', 'reserved': False}])})
@@ -171,7 +172,7 @@ class AndroidDeviceBusinessTests(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.root = Path(cls.temp.name)
         cls.binary = cls.root / 'reference-api'
-        compile_result = subprocess.run(['rtk', 'proxy', 'go', 'build', '-trimpath', '-o', str(cls.binary), '.'],
+        compile_result = subprocess.run(tool_command(['go', 'build', '-trimpath', '-o', str(cls.binary), '.']),
             cwd=REPO / 'blueprints/flutter-go/backend', capture_output=True, timeout=60)
         if compile_result.returncode:
             raise RuntimeError(compile_result.stderr.decode())
@@ -179,9 +180,9 @@ class AndroidDeviceBusinessTests(unittest.TestCase):
         openssl = '/opt/homebrew/opt/openssl@3/bin/openssl' if Path('/opt/homebrew/opt/openssl@3/bin/openssl').is_file() else shutil.which('openssl')
         if not openssl:
             raise RuntimeError('OpenSSL is required for actual local TLS contract verification')
-        result = subprocess.run(['rtk', 'proxy', openssl, 'req', '-x509',
+        result = subprocess.run(tool_command([openssl, 'req', '-x509',
             '-newkey', 'rsa:2048', '-nodes', '-days', '1', '-subj', '/CN=localhost',
-            '-addext', 'subjectAltName=DNS:localhost,IP:127.0.0.1', '-keyout', str(cls.key), '-out', str(cls.cert)],
+            '-addext', 'subjectAltName=DNS:localhost,IP:127.0.0.1', '-keyout', str(cls.key), '-out', str(cls.cert)]),
             capture_output=True, timeout=30)
         if result.returncode:
             raise RuntimeError(result.stderr.decode())

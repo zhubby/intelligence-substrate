@@ -13,6 +13,7 @@ import zipfile
 
 import test_android_device_business as support
 from test_android_device_quality import PROFILE
+from android_quality_common import tool_command
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -68,9 +69,9 @@ class AndroidDeviceCLITests(unittest.TestCase):
             output = destination / 'report.tar.gz'
             if scenario == 'old-report':
                 output.write_bytes(b'previous immutable report')
-            result = subprocess.run(['rtk', 'proxy', sys.executable, str(ENTRY), '--config', str(profile_file),
+            result = subprocess.run(tool_command([sys.executable, str(ENTRY), '--config', str(profile_file),
                 '--application', str(application), '--adb', str(tools['adb']), '--aapt', str(tools['aapt']),
-                '--apksigner', str(tools['apksigner']), '--output', str(output)], capture_output=True,
+                '--apksigner', str(tools['apksigner']), '--output', str(output)]), capture_output=True,
                 env={**os.environ, 'IS_ARTIFACT_PATH': str(apk)}, timeout=90)
             request_count = len(server.requests)
         data = json.loads(state.read_text())
