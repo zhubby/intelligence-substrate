@@ -1,0 +1,13 @@
+{
+  "driver": "native",
+  "allowNative": true,
+  "stateDir": "/var/lib/intelligence-substrate/signing-worker",
+  "signers": {
+    "android-huawei": [
+      "/usr/bin/python3",
+      "/opt/intelligence-substrate/trusted/sign-android-apk.py",
+      "--config",
+      "/etc/intelligence-substrate/signer.android.json"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "driver": "native",
+  "allowNative": false,
+  "stateDir": "/var/lib/substrate-vivo-worker",
+  "publishers": {
+    "android-vivo": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.vivo.json"]
+  },
+  "statusProviders": {
+    "android-vivo": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.vivo.json", "-status-only"]
+  },
+  "publishEnvironment": ["JAVA_HOME"]
+}

@@ -1,0 +1,23 @@
+name: intelligence-substrate-kind
+services:
+  gateway:
+    image: ${IS_KIND_GATEWAY_IMAGE:-caddy:2-alpine}
+    user: "10001:10001"
+    labels:
+      dev.orbstack.domains: substrate.orb.local
+      dev.orbstack.http-port: "8080"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      XDG_CONFIG_HOME: /tmp/config
+      XDG_DATA_HOME: /tmp/data
+    networks: [kind]
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=16m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+networks:
+  kind:
+    external: true

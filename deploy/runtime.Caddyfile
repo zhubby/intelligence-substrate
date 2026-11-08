@@ -1,0 +1,6 @@
+# A dedicated application origin; never share the control-plane origin/Cookie domain.
+feedback.company.example {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:8091
+  header Strict-Transport-Security "max-age=31536000"
+}

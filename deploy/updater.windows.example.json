@@ -1,0 +1,11 @@
+{
+  "stateDir": "C:\\SubstrateUpdater\\CustomerFeedback",
+  "origin": "https://windows-apps.company.example",
+  "app": "customer-feedback",
+  "target": "windows",
+  "channel": "stable",
+  "publicKey": "REPLACE_WITH_PINNED_ED25519_PUBLIC_KEY_BASE64",
+  "expectedSigner": "REPLACE_WITH_SIGNING_CERTIFICATE_SHA1",
+  "packageId": "Company.CustomerFeedback",
+  "windowsPublisher": "CN=REPLACE_WITH_EXACT_MSIX_PUBLISHER"
+}

@@ -1,0 +1,19 @@
+{
+  "instanceId": "feedback-production-REPLACE-ONCE",
+  "stateDir": "/var/lib/substrate-runtime/feedback",
+  "projectId": "project_REPLACE",
+  "goalId": "goal_REPLACE",
+  "appId": "customer-feedback",
+  "publicUrl": "https://feedback.company.example",
+  "dockerBinary": "/usr/bin/docker",
+  "dockerHost": "unix:///var/run/docker.sock",
+  "containerPort": 8080,
+  "healthPath": "/api/health",
+  "persistentData": true,
+  "dataContract": "feedback-v1",
+  "environmentFile": "/etc/substrate/feedback.env",
+  "memoryMB": 256,
+  "cpus": 1,
+  "platformUrl": "https://substrate.company.example",
+  "workerTokenFile": "/run/secrets/feedback-release-worker-token"
+}

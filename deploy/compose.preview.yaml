@@ -1,0 +1,9 @@
+# Optional: docker compose -f compose.yaml -f deploy/compose.preview.yaml ...
+# The enterprise TLS ingress must use a hostname different from IS_PUBLIC_URL.
+services:
+  platform:
+    environment:
+      IS_PREVIEW_LISTEN: ${IS_PREVIEW_LISTEN:-0.0.0.0:8083}
+      IS_PREVIEW_URL: ${IS_PREVIEW_URL:?Set a separate HTTPS preview origin}
+    ports:
+      - "127.0.0.1:${IS_PREVIEW_HTTP_PORT:-8083}:8083"

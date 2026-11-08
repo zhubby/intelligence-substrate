@@ -1,0 +1,6 @@
+# Deploy on a separate origin from the authenticated control plane.
+apps.company.example {
+  encode zstd gzip
+  reverse_proxy 127.0.0.1:8090
+  header Strict-Transport-Security "max-age=31536000"
+}

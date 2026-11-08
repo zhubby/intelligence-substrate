@@ -1,0 +1,25 @@
+{
+  "stateDir": "/Library/Application Support/IntelligenceSubstrate/ios-signer",
+  "profiles": [
+    {
+      "projectId": "project_example",
+      "goalId": "goal_example",
+      "target": "ios-appstore",
+      "bundleId": "com.company.application",
+      "expectedSigner": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expectedTeamId": "ABCD123456",
+      "expectedProvisioningProfile": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "certificateFile": "/Library/IntelligenceSubstrate/private/distribution.der",
+      "profileFile": "/Library/IntelligenceSubstrate/private/appstore.mobileprovision",
+      "entitlementsFile": "/Library/IntelligenceSubstrate/private/ios-entitlements.plist",
+      "keychainFile": "/Library/IntelligenceSubstrate/private/ios-signing.keychain-db",
+      "profileTrustCAFile": "/Library/IntelligenceSubstrate/private/apple-profile-trust.pem",
+      "profileTrustCASHA256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "tools": {
+        "openssl": "/opt/homebrew/opt/openssl@3/bin/openssl",
+        "codesign": "/usr/bin/codesign",
+        "security": "/usr/bin/security"
+      }
+    }
+  ]
+}

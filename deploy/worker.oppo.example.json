@@ -1,0 +1,12 @@
+{
+  "driver": "native",
+  "allowNative": false,
+  "stateDir": "/var/lib/substrate-oppo-worker",
+  "publishers": {
+    "android-oppo": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.oppo.json"]
+  },
+  "statusProviders": {
+    "android-oppo": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.oppo.json", "-status-only"]
+  },
+  "publishEnvironment": ["JAVA_HOME"]
+}

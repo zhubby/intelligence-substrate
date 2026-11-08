@@ -1,0 +1,22 @@
+{
+  "stateDir": "C:\\IntelligenceSubstratePrivate\\signer-state",
+  "profiles": [
+    {
+      "projectId": "project_example",
+      "goalId": "goal_example",
+      "target": "windows",
+      "expectedSigner": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expectedWindowsPublisher": "CN=REPLACE_WITH_EXACT_CERTIFICATE_SUBJECT",
+      "expectedWindowsPackage": "com.company.feedback",
+      "expectedWindowsVersion": "1.0.0.0",
+      "certificateFile": "C:\\IntelligenceSubstratePrivate\\code-signing.der",
+      "storeLocation": "LocalMachine",
+      "signtoolPath": "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.26100.0\\x64\\signtool.exe",
+      "signtoolSHA256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "powershellPath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+      "helperPath": "C:\\IntelligenceSubstratePrivate\\windows-signing-tools.ps1",
+      "helperSHA256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "timestampURL": "https://timestamp.company.example/rfc3161"
+    }
+  ]
+}

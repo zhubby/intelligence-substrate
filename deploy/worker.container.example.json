@@ -1,0 +1,6 @@
+{
+  "driver": "container",
+  "image": "registry.company.example/toolchains/flutter-go@sha256:REPLACE_WITH_64_HEX_DIGEST",
+  "stateDir": "/var/lib/intelligence-substrate/worker",
+  "allowNative": false
+}

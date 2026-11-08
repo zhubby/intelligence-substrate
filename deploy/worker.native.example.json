@@ -1,0 +1,7 @@
+{
+  "driver": "native",
+  "allowNative": true,
+  "stateDir": "/var/lib/intelligence-substrate/worker",
+  "publishers": {},
+  "publishEnvironment": []
+}

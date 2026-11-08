@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "repository": "https://github.com/notofonts/noto-cjk",
+      "commit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
+      "files": [
+        {
+          "file": "NotoSansSC-Regular.otf",
+          "sourcePath": "Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
+          "sourceURL": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
+          "bytes": 16437364,
+          "sha256": "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b",
+          "upstreamGitBlob": "dc15562470b4f842321894787a0d066879ccff8b"
+        },
+        {
+          "file": "NotoSansSC-LICENSE.txt",
+          "sourcePath": "Sans/LICENSE",
+          "sourceURL": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE",
+          "bytes": 4301,
+          "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+          "upstreamGitBlob": "d952d62c065f3f35fb83a173496e90b21525aef3"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/google/fonts",
+      "commit": "24ddc1f324cac5d9f5aedca126d298f56e3f1640",
+      "files": [
+        {
+          "file": "Roboto-Variable.ttf",
+          "sourcePath": "ofl/roboto/Roboto[wdth,wght].ttf",
+          "sourceURL": "https://raw.githubusercontent.com/google/fonts/24ddc1f324cac5d9f5aedca126d298f56e3f1640/ofl/roboto/Roboto%5Bwdth%2Cwght%5D.ttf",
+          "bytes": 488584,
+          "sha256": "d7598e12c5dbef095ff8272cfc55da0250bd07fbdecbac8a530b9b277872a134",
+          "upstreamGitBlob": "5522a368d9072fd88c299916e61fcff369949061"
+        },
+        {
+          "file": "Roboto-LICENSE.txt",
+          "sourcePath": "ofl/roboto/OFL.txt",
+          "sourceURL": "https://raw.githubusercontent.com/google/fonts/24ddc1f324cac5d9f5aedca126d298f56e3f1640/ofl/roboto/OFL.txt",
+          "bytes": 4394,
+          "sha256": "061402327a96aadb0bfb694a960ed289ecd38d383e396243831ab81feb109c41",
+          "upstreamGitBlob": "9c48e05a24fa2267e207ecf17560291b5621c197"
+        }
+      ]
+    }
+  ]
+}

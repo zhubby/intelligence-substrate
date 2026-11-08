@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "serial": "USB_SERIAL_REPLACE",
+  "adbServerPort": 15039,
+  "manufacturer": "REPLACE_MANUFACTURER",
+  "model": "REPLACE_MODEL",
+  "fingerprint": "REPLACE_EXACT_ANDROID_BUILD_FINGERPRINT",
+  "sdk": 36,
+  "package": "com.company.customer_feedback",
+  "versionCode": 1,
+  "versionName": "1.0.0",
+  "certificateSHA256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "mode": "feedback",
+  "apiURL": "https://qa-api.company.example",
+  "dedicatedTestAPI": true
+}

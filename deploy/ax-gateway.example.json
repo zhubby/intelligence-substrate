@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "control": {
+    "listen": "0.0.0.0:8443",
+    "tls": {
+      "certFile": "/etc/intelligence-substrate/ax-gateway/control-server.pem",
+      "keyFile": "/etc/intelligence-substrate/ax-gateway/control-server-key.pem",
+      "clientCAFile": "/etc/intelligence-substrate/ax-gateway/control-client-ca.pem"
+    }
+  },
+  "guest": {
+    "listen": "0.0.0.0:8444",
+    "tls": {
+      "certFile": "/etc/intelligence-substrate/ax-gateway/guest-server.pem",
+      "keyFile": "/etc/intelligence-substrate/ax-gateway/guest-server-key.pem",
+      "clientCAFile": "/etc/intelligence-substrate/ax-gateway/guest-client-ca.pem"
+    }
+  },
+  "controlUpstream": {
+    "endpoint": "127.0.0.1:50051",
+    "privateNetworkNamespace": true
+  },
+  "guestUpstream": {
+    "endpoint": "guest-router.internal:443",
+    "serverName": "guest-router.internal",
+    "serverSPKI": "0000000000000000000000000000000000000000000000000000000000000000",
+    "caFile": "/etc/intelligence-substrate/ax-gateway/upstream-guest-ca.pem",
+    "clientCertFile": "/etc/intelligence-substrate/ax-gateway/upstream-guest-client.pem",
+    "clientKeyFile": "/etc/intelligence-substrate/ax-gateway/upstream-guest-client-key.pem"
+  },
+  "policyFile": "/etc/intelligence-substrate/ax-gateway/policy.json",
+  "auditFile": "/var/lib/intelligence-substrate/ax-gateway/audit.jsonl"
+}

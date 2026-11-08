@@ -1,0 +1,13 @@
+{
+  "driver": "native",
+  "allowNative": true,
+  "stateDir": "C:\\IntelligenceSubstratePrivate\\worker-state",
+  "signers": {
+    "windows": [
+      "C:\\IntelligenceSubstrateTrusted\\Python\\python.exe",
+      "C:\\IntelligenceSubstratePrivate\\sign-windows-msix.py",
+      "--config",
+      "C:\\IntelligenceSubstratePrivate\\signer.windows.json"
+    ]
+  }
+}

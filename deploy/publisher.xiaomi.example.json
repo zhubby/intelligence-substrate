@@ -1,0 +1,19 @@
+{
+  "stateDir": "/var/lib/substrate-xiaomi-publisher",
+  "profiles": [
+    {
+      "projectId": "project_REPLACE",
+      "goalId": "goal_REPLACE",
+      "target": "android-xiaomi",
+      "driver": "xiaomi-market",
+      "appId": "com.company.feedback",
+      "bundleId": "com.company.feedback",
+      "expectedSigner": "replace_with_lowercase_release_certificate_sha256_64_hex_characters",
+      "credentialsFile": "/private/substrate-secrets/xiaomi-api.json",
+      "aaptPath": "/opt/android-sdk/build-tools/36.0.0/aapt",
+      "apkSignerPath": "/opt/android-sdk/build-tools/36.0.0/apksigner",
+      "metadataFile": "/private/substrate-material/xiaomi-feedback.json",
+      "metadataDigest": "replace_with_sha256_of_exact_reviewed_metadata_file_bytes"
+    }
+  ]
+}

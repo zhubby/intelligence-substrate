@@ -1,0 +1,64 @@
+services:
+  database:
+    image: ${IS_POSTGRES_IMAGE:-postgres:17-alpine}
+    environment:
+      POSTGRES_USER: substrate
+      POSTGRES_DB: substrate
+      POSTGRES_PASSWORD: ${IS_POSTGRES_PASSWORD:?Set a URL-safe PostgreSQL password}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U substrate -d substrate"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  platform:
+    image: ${IS_PLATFORM_IMAGE:-intelligence-substrate:local}
+    build:
+      context: .
+      args:
+        NODE_IMAGE: ${IS_NODE_IMAGE:-node:22-alpine}
+        GO_IMAGE: ${IS_GO_IMAGE:-golang:1.27.3-alpine}
+        RUNTIME_IMAGE: ${IS_RUNTIME_IMAGE:-debian:trixie-slim}
+        GOPROXY: ${IS_BUILD_GOPROXY:-https://proxy.golang.org,direct}
+        NPM_REGISTRY: ${IS_BUILD_NPM_REGISTRY:-https://registry.npmjs.org}
+    environment:
+      IS_DATABASE_URL: postgres://substrate:${IS_POSTGRES_PASSWORD}@database:5432/substrate?sslmode=disable
+      IS_PUBLIC_URL: ${IS_PUBLIC_URL:?Set the HTTPS workbench origin}
+      IS_BOOTSTRAP_EMAIL: ${IS_BOOTSTRAP_EMAIL:-admin@example.com}
+      IS_BOOTSTRAP_PASSWORD_FILE: /run/secrets/bootstrap_password
+      IS_MODEL_BASE_URL: ${IS_MODEL_BASE_URL:-}
+      IS_MODEL_NAME: ${IS_MODEL_NAME:-}
+      IS_MODEL_API_KEY: ${IS_MODEL_API_KEY:-}
+      IS_MODEL_INPUT_USD_PER_MILLION: ${IS_MODEL_INPUT_USD_PER_MILLION:-}
+      IS_MODEL_OUTPUT_USD_PER_MILLION: ${IS_MODEL_OUTPUT_USD_PER_MILLION:-}
+      IS_MODEL_EXTERNAL: ${IS_MODEL_EXTERNAL:-true}
+      IS_MODEL_ALLOW_HTTP: ${IS_MODEL_ALLOW_HTTP:-false}
+      IS_MODEL_MIN_INTERVAL_SECONDS: ${IS_MODEL_MIN_INTERVAL_SECONDS:-0}
+      IS_MODEL_DEFAULT_MAX_TOKENS: ${IS_MODEL_DEFAULT_MAX_TOKENS:-4096}
+      IS_MODEL_OPTIONS_JSON: ${IS_MODEL_OPTIONS_JSON:-}
+      IS_OIDC_ISSUER: ${IS_OIDC_ISSUER:-}
+      IS_OIDC_CLIENT_ID: ${IS_OIDC_CLIENT_ID:-}
+      IS_OIDC_CLIENT_SECRET: ${IS_OIDC_CLIENT_SECRET:-}
+    secrets:
+      - bootstrap_password
+    ports:
+      - "127.0.0.1:${IS_HTTP_PORT:-8080}:8080"
+    volumes:
+      - platform:/data
+    depends_on:
+      database:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=256m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+volumes:
+  database:
+  platform:
+secrets:
+  bootstrap_password:
+    file: ${IS_BOOTSTRAP_SECRET_PATH:-./.secrets/bootstrap-password}

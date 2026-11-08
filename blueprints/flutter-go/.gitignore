@@ -1,0 +1,17 @@
+.dart_tool/
+.flutter-plugins-dependencies
+.gradle/
+build/
+artifacts/
+data/
+__pycache__/
+*.pyc
+.DS_Store
+client/android/local.properties
+client/ios/Pods/
+client/ios/.symlinks/
+client/ios/Flutter/ephemeral/
+client/ios/Flutter/Generated.xcconfig
+client/ios/Flutter/flutter_export_environment.sh
+client/macos/Pods/
+client/macos/Flutter/ephemeral/

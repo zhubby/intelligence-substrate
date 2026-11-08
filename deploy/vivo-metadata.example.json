@@ -1,0 +1,19 @@
+{
+  "updateDesc": "完善客户反馈处理流程并修复已知问题",
+  "compatibleDevice": 1,
+  "privateSelfCheck": "https://company.example/privacy",
+  "detailDesc": "本应用用于企业收集客户反馈、跟踪反馈处理状态和保存相关处理记录。请替换为经过产品与合规负责人审核的真实业务介绍。",
+  "remark": "替换为经过审核的测试路径和必要账号说明",
+  "customerService": "replace@example.test",
+  "rateAge": 3,
+  "icon": {
+    "path": "/private/substrate-material/vivo/icon.png",
+    "sha256": "replace_with_reviewed_asset_sha256",
+    "bytes": 0
+  },
+  "screenshots": [
+    {"path": "/private/substrate-material/vivo/screen1.png", "sha256": "replace_with_reviewed_asset_sha256", "bytes": 0},
+    {"path": "/private/substrate-material/vivo/screen2.png", "sha256": "replace_with_reviewed_asset_sha256", "bytes": 0},
+    {"path": "/private/substrate-material/vivo/screen3.png", "sha256": "replace_with_reviewed_asset_sha256", "bytes": 0}
+  ]
+}

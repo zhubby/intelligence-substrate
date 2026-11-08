@@ -1,0 +1,29 @@
+# Optional enterprise ingress for the private preview listener.
+# Never route this hostname to the control-plane listener.
+# This is a complete Caddyfile. Merge this global logger if sharing a process;
+# a site-level access-log setting does not filter reverse-proxy error logs.
+{
+	servers {
+		strict_sni_host on
+	}
+	log default {
+		level INFO
+		exclude http.log.access
+		format filter {
+			wrap json
+			fields {
+				request>uri delete
+				request>headers delete
+				resp_headers delete
+			}
+		}
+	}
+}
+
+preview.company.example {
+	log {
+		output discard
+	}
+	header Cache-Control "no-store"
+	reverse_proxy 127.0.0.1:8083
+}

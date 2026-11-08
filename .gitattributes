@@ -1,0 +1,2 @@
+# Preserve the upstream font license text byte for byte.
+blueprints/flutter-go/client/assets/fonts/*-LICENSE.txt whitespace=-blank-at-eol

@@ -1,0 +1,21 @@
+{
+  "synchroType": 0,
+  "appInfo": {
+    "appName": "客户反馈",
+    "category": 10,
+    "keyWords": "企业 反馈",
+    "desc": "替换为经发布负责人核对的真实应用说明",
+    "brief": "收集客户反馈",
+    "privacyUrl": "https://company.example/privacy"
+  },
+  "icon": {
+    "path": "/private/substrate-material/icon.png",
+    "sha256": "replace_with_exact_image_sha256_64_lowercase_hex_characters",
+    "bytes": 0
+  },
+  "screenshots": [
+    {"path": "/private/substrate-material/1.png", "sha256": "replace_with_exact_image_sha256", "bytes": 0},
+    {"path": "/private/substrate-material/2.png", "sha256": "replace_with_exact_image_sha256", "bytes": 0},
+    {"path": "/private/substrate-material/3.png", "sha256": "replace_with_exact_image_sha256", "bytes": 0}
+  ]
+}

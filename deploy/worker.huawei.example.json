@@ -1,0 +1,15 @@
+{
+  "driver": "native",
+  "allowNative": false,
+  "stateDir": "/var/lib/substrate-huawei-worker",
+  "publishers": {
+    "android-huawei": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.huawei.json"]
+  },
+  "statusProviders": {
+    "android-huawei": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.huawei.json", "-status-only"]
+  },
+  "continuationProviders": {
+    "android-huawei": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.huawei.json", "-continue-only"]
+  },
+  "publishEnvironment": ["JAVA_HOME"]
+}

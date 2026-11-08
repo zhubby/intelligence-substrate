@@ -1,0 +1,30 @@
+{
+  "appName": "企业反馈",
+  "secondCategoryId": 74,
+  "thirdCategoryId": 6685,
+  "summary": "收集客户反馈",
+  "detailDesc": "用于企业团队收集客户反馈意见并跟踪处理进度的应用",
+  "updateDesc": "修复问题并完善反馈流程",
+  "privacyURL": "https://company.example/privacy",
+  "testDesc": "替换为经审核的真实测试说明和必要的受控测试账号",
+  "businessUsername": "REPLACE_CONTACT",
+  "businessEmail": "replace@example.test",
+  "businessMobile": "REPLACE_MOBILE",
+  "ageLevel": 3,
+  "adaptiveEquipment": 4,
+  "icon": {
+    "path": "/private/substrate-material/oppo/icon.png",
+    "sha256": "replace_with_reviewed_asset_sha256",
+    "bytes": 0
+  },
+  "screenshots": [
+    {"path": "/private/substrate-material/oppo/screen1.png", "sha256": "replace_with_reviewed_asset_sha256", "bytes": 0},
+    {"path": "/private/substrate-material/oppo/screen2.png", "sha256": "replace_with_reviewed_asset_sha256", "bytes": 0},
+    {"path": "/private/substrate-material/oppo/screen3.png", "sha256": "replace_with_reviewed_asset_sha256", "bytes": 0}
+  ],
+  "copyright": {
+    "path": "/private/substrate-material/oppo/copyright.png",
+    "sha256": "replace_with_reviewed_asset_sha256",
+    "bytes": 0
+  }
+}

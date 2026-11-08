@@ -1,0 +1,15 @@
+{
+	admin off
+	auto_https off
+}
+
+:8080 {
+	# OrbStack terminates trusted local HTTPS. Never persist request URLs,
+	# credentials or generated content in gateway access logs.
+	@wrongHost not host substrate.orb.local
+	respond @wrongHost 421
+	header Strict-Transport-Security "max-age=31536000"
+	reverse_proxy substrate-orbstack-control-plane:30080 {
+		flush_interval -1
+	}
+}

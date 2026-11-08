@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "appId": "1234567890",
+  "bundleId": "com.company.feedback",
+  "version": "1.0.0",
+  "locales": [
+    {
+      "locale": "en-US",
+      "versionText": {
+        "description": "Describe the reviewed app and its actual user experience.",
+        "keywords": "feedback,service",
+        "supportUrl": "https://company.example/support",
+        "marketingUrl": "",
+        "promotionalText": "",
+        "whatsNew": "Describe this approved release."
+      },
+      "appInfo": {
+        "name": "Customer Feedback",
+        "subtitle": "",
+        "privacyPolicyUrl": "https://company.example/privacy",
+        "privacyChoicesUrl": "",
+        "privacyPolicyText": ""
+      },
+      "screenshots": [
+        {
+          "placementGroup": "IPHONE_DYNAMIC_ISLAND_LARGE_PROFILE",
+          "images": [
+            {
+              "path": "/private/substrate-materials/reviewed-screen.png",
+              "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+              "bytes": 1,
+              "specId": "f56c777c-99ea-5760-97ae-27c5f8cbb884"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

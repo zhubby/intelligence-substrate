@@ -1,0 +1,20 @@
+{
+  "stateDir": "/var/lib/intelligence-substrate/android-signer",
+  "profiles": [
+    {
+      "projectId": "project_example",
+      "goalId": "goal_example",
+      "target": "android-huawei",
+      "bundleId": "com.company.application",
+      "expectedSigner": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "keystoreFile": "/etc/intelligence-substrate/signing/application.p12",
+      "keyAlias": "application-release",
+      "storePasswordFile": "/etc/intelligence-substrate/signing/store-password",
+      "keyPasswordFile": "/etc/intelligence-substrate/signing/key-password",
+      "aaptPath": "/opt/android-sdk/build-tools/36.0.0/aapt",
+      "apkSignerPath": "/opt/android-sdk/build-tools/36.0.0/apksigner",
+      "zipalignPath": "/opt/android-sdk/build-tools/36.0.0/zipalign",
+      "javaHome": "/opt/java/21"
+    }
+  ]
+}

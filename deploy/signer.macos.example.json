@@ -1,0 +1,29 @@
+{
+  "stateDir": "/Library/Application Support/IntelligenceSubstrate/macos-signer",
+  "profiles": [
+    {
+      "projectId": "project_example",
+      "goalId": "goal_example",
+      "target": "macos",
+      "bundleId": "com.company.application",
+      "expectedSigner": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expectedApplicationSigner": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "expectedTeamId": "ABCD123456",
+      "applicationCertificateFile": "/Library/IntelligenceSubstrate/private/application.der",
+      "installerCertificateFile": "/Library/IntelligenceSubstrate/private/installer.der",
+      "keychainFile": "/Library/IntelligenceSubstrate/private/signing.keychain-db",
+      "entitlementsFile": "/Library/IntelligenceSubstrate/private/entitlements.plist",
+      "notaryProfile": "company-notary",
+      "tools": {
+        "codesign": "/usr/bin/codesign",
+        "productbuild": "/usr/bin/productbuild",
+        "notarytool": "/Applications/Xcode.app/Contents/Developer/usr/bin/notarytool",
+        "stapler": "/Applications/Xcode.app/Contents/Developer/usr/bin/stapler",
+        "pkgutil": "/usr/sbin/pkgutil",
+        "spctl": "/usr/sbin/spctl",
+        "security": "/usr/bin/security",
+        "openssl": "/usr/bin/openssl"
+      }
+    }
+  ]
+}

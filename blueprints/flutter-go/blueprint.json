@@ -1,0 +1,94 @@
+{
+  "id": "flutter-go-v1",
+  "version": 1,
+  "description": "Flutter multi-platform client with a single-instance Go reference API",
+  "runtimes": {
+    "web": "linux",
+    "ios-appstore": "darwin",
+    "android": "linux",
+    "windows": "windows",
+    "macos": "darwin"
+  },
+  "recipes": {
+    "backend-test": [
+      "go",
+      "test",
+      "./..."
+    ],
+    "web-build": [
+      "flutter",
+      "build",
+      "web",
+      "--release"
+    ],
+    "ios-build": [
+      "flutter",
+      "build",
+      "ipa",
+      "--release"
+    ],
+    "android-build": [
+      "flutter",
+      "build",
+      "appbundle",
+      "--release"
+    ],
+    "windows-build": [
+      "flutter",
+      "build",
+      "windows",
+      "--release"
+    ],
+    "macos-build": [
+      "flutter",
+      "build",
+      "macos",
+      "--release"
+    ]
+  },
+  "publicationRequires": [
+    "real-signing-identities",
+    "channel-accounts",
+    "protected-publisher",
+    "independent-device-and-business-validation"
+  ],
+  "verifiedRecipes": {
+    "web": {
+      "command": [
+        "python3",
+        "scripts/build-reference-client.py",
+        "--application",
+        ".",
+        "--target",
+        "web",
+        "--api-url",
+        "https://api.company.example",
+        "--output",
+        "artifacts/web.tar.gz"
+      ],
+      "outputPath": "artifacts/web.tar.gz"
+    },
+    "android-arm64-debug": {
+      "command": [
+        "python3",
+        "scripts/build-reference-client.py",
+        "--application",
+        ".",
+        "--target",
+        "android-debug",
+        "--api-url",
+        "https://api.company.example",
+        "--output",
+        "artifacts/android-arm64-debug.apk"
+      ],
+      "outputPath": "artifacts/android-arm64-debug.apk",
+      "publishable": false
+    }
+  },
+  "gradleDistributions": {
+    "9.4.1": {
+      "url": "https://services.gradle.org/distributions/gradle-9.4.1-bin.zip",
+      "sha256": "2ab2958f2a1e51120c326cad6f385153bb11ee93b3c216c5fccebfdfbb7ec6cb"
+    }
+  }
+}

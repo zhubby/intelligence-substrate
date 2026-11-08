@@ -1,0 +1,25 @@
+{
+  "stateDir": "/var/lib/substrate-publisher",
+  "profiles": [
+    {
+      "projectId": "project_REPLACE",
+      "goalId": "goal_REPLACE",
+      "target": "web",
+      "driver": "hosted",
+      "appId": "customer-feedback",
+      "channel": "stable",
+      "distributionRoot": "/var/lib/substrate-distribution",
+      "publicUrl": "https://apps.company.example",
+      "signingKeyFile": "/run/secrets/substrate-update-key"
+    },
+    {
+      "projectId": "project_REPLACE",
+      "goalId": "goal_REPLACE",
+      "target": "android-google-play",
+      "driver": "google-play",
+      "appId": "com.company.feedback",
+      "track": "production",
+      "credentialsFile": "/run/secrets/play-service-account.json"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "driver": "native",
+  "allowNative": false,
+  "stateDir": "/var/lib/substrate-runtime-worker/feedback",
+  "publishers": {
+    "web": ["/opt/substrate/bin/is-runtime", "-config", "/etc/substrate/runtime.json", "-mode", "publish"]
+  },
+  "statusProviders": {
+    "web": ["/opt/substrate/bin/is-runtime", "-config", "/etc/substrate/runtime.json", "-mode", "status"]
+  },
+  "rollbackProviders": {
+    "web": ["/opt/substrate/bin/is-runtime", "-config", "/etc/substrate/runtime.json", "-mode", "rollback"]
+  },
+  "publishEnvironment": []
+}

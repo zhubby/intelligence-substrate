@@ -1,0 +1,18 @@
+{
+  "stateDir": "/var/lib/substrate-publisher",
+  "profiles": [
+    {
+      "projectId": "project_REPLACE",
+      "goalId": "goal_REPLACE",
+      "target": "macos",
+      "driver": "hosted",
+      "appId": "customer-feedback",
+      "channel": "stable",
+      "distributionRoot": "/var/lib/substrate-distribution",
+      "publicUrl": "https://macos-apps.company.example",
+      "signingKeyFile": "/private/substrate-secrets/update-key",
+      "installerFilename": "customer-feedback.pkg",
+      "expectedSigner": "REPLACE_WITH_APPLE_TEAM_ID"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "driver": "ax",
+  "stateDir": "/var/lib/intelligence-substrate/worker",
+  "ax": {
+    "namespace": "ax-system",
+    "atespace": "intelligence-substrate",
+    "context": "enterprise-execution",
+    "image": "registry.company.example/toolchains/ax-flutter-go@sha256:REPLACE_WITH_64_HEX_DIGEST",
+    "secure": {
+      "control": {
+        "endpoint": "ax-gateway.company.example:443",
+        "serverName": "ax-gateway.company.example",
+        "serverSPKI": "REPLACE_WITH_64_LOWERCASE_HEX_DIGEST",
+        "caFile": "/etc/intelligence-substrate/ax/control-ca.pem",
+        "clientCertFile": "/etc/intelligence-substrate/ax/control-client.pem",
+        "clientKeyFile": "/etc/intelligence-substrate/ax/control-client-key.pem"
+      },
+      "guest": {
+        "endpoint": "atenet-router.company.example:443",
+        "serverName": "atenet-router.company.example",
+        "serverSPKI": "REPLACE_WITH_64_LOWERCASE_HEX_DIGEST",
+        "caFile": "/etc/intelligence-substrate/ax/router-ca.pem",
+        "clientCertFile": "/etc/intelligence-substrate/ax/router-client.pem",
+        "clientKeyFile": "/etc/intelligence-substrate/ax/router-client-key.pem"
+      }
+    }
+  }
+}

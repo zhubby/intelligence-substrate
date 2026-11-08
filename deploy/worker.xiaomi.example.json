@@ -1,0 +1,12 @@
+{
+  "driver": "native",
+  "allowNative": false,
+  "stateDir": "/var/lib/substrate-xiaomi-worker",
+  "publishers": {
+    "android-xiaomi": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.xiaomi.json"]
+  },
+  "statusProviders": {
+    "android-xiaomi": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.xiaomi.json", "-status-only"]
+  },
+  "publishEnvironment": ["JAVA_HOME"]
+}

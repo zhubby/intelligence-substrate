@@ -1,0 +1,14 @@
+{
+  "driver": "native",
+  "allowNative": false,
+  "stateDir": "/var/lib/substrate-release-worker",
+  "publishers": {
+    "web": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.json"],
+    "android-google-play": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.json"]
+  },
+  "statusProviders": {
+    "web": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.json", "-status-only"],
+    "android-google-play": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.json", "-status-only"]
+  },
+  "publishEnvironment": []
+}

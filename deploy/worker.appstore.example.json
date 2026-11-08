@@ -1,0 +1,18 @@
+{
+  "driver": "native",
+  "allowNative": false,
+  "stateDir": "/var/lib/substrate-appstore-worker",
+  "publishers": {
+    "ios-appstore": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.appstore.json"]
+  },
+  "statusProviders": {
+    "ios-appstore": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.appstore.json", "-status-only"]
+  },
+  "continuationProviders": {
+    "ios-appstore": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.appstore.json", "-continue-only"]
+  },
+  "materialProviders": {
+    "ios-appstore": ["/opt/substrate/bin/is-publisher", "-config", "/etc/substrate/publisher.appstore.json", "-materials-only"]
+  },
+  "publishEnvironment": []
+}

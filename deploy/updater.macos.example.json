@@ -1,0 +1,10 @@
+{
+  "stateDir": "/var/lib/substrate-updater/customer-feedback",
+  "origin": "https://macos-apps.company.example",
+  "app": "customer-feedback",
+  "target": "macos",
+  "channel": "stable",
+  "publicKey": "REPLACE_WITH_PINNED_ED25519_PUBLIC_KEY_BASE64",
+  "expectedSigner": "REPLACE_WITH_APPLE_TEAM_ID",
+  "packageId": "com.company.customer-feedback"
+}

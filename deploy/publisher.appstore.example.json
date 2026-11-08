@@ -1,0 +1,18 @@
+{
+  "stateDir": "/var/lib/substrate-appstore-publisher",
+  "profiles": [
+    {
+      "projectId": "project_REPLACE",
+      "goalId": "goal_REPLACE",
+      "target": "ios-appstore",
+      "driver": "app-store",
+      "appId": "1234567890",
+      "bundleId": "com.company.feedback",
+      "expectedSigner": "ABCD123456",
+      "credentialsFile": "/private/substrate-secrets/appstore-connect.json",
+      "metadataFile": "/private/substrate-materials/appstore-metadata.json",
+      "metadataDigest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "uploadHosts": ["replace-with-verified-upload-host.company.example"]
+    }
+  ]
+}

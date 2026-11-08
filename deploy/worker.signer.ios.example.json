@@ -1,0 +1,13 @@
+{
+  "driver": "native",
+  "allowNative": true,
+  "stateDir": "/Library/Application Support/IntelligenceSubstrate/ios-signing-worker",
+  "signers": {
+    "ios-appstore": [
+      "/path/to/verified/python3",
+      "/Library/IntelligenceSubstrate/trusted/sign-ios-ipa.py",
+      "--config",
+      "/Library/IntelligenceSubstrate/private/signer.ios.json"
+    ]
+  }
+}

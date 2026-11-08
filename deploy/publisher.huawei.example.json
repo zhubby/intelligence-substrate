@@ -1,0 +1,19 @@
+{
+  "stateDir": "/var/lib/substrate-huawei-publisher",
+  "profiles": [
+    {
+      "projectId": "project_REPLACE",
+      "goalId": "goal_REPLACE",
+      "target": "android-huawei",
+      "driver": "huawei-appgallery",
+      "appId": "1234567890",
+      "bundleId": "com.company.feedback",
+      "expectedSigner": "replace_with_lowercase_release_certificate_sha256_64_hex_characters",
+      "credentialsFile": "/private/substrate-secrets/huawei-api-client.json",
+      "aaptPath": "/opt/android-sdk/build-tools/36.0.0/aapt",
+      "apkSignerPath": "/opt/android-sdk/build-tools/36.0.0/apksigner",
+      "chineseMainland": true,
+      "uploadHosts": ["replace-with-verified-exact-obs-upload-host.example"]
+    }
+  ]
+}

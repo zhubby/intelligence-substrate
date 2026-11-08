@@ -1,0 +1,18 @@
+{
+  "stateDir": "C:\\SubstratePublisher\\state",
+  "profiles": [
+    {
+      "projectId": "project_REPLACE",
+      "goalId": "goal_REPLACE",
+      "target": "windows",
+      "driver": "hosted",
+      "appId": "customer-feedback",
+      "channel": "stable",
+      "distributionRoot": "C:\\SubstrateDistribution",
+      "publicUrl": "https://windows-apps.company.example",
+      "signingKeyFile": "C:\\SubstrateSecrets\\update-key",
+      "installerFilename": "customer-feedback.msix",
+      "expectedSigner": "REPLACE_WITH_SIGNING_CERTIFICATE_SHA1"
+    }
+  ]
+}
