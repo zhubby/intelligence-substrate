@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./theme";
 async function navigate(page: Page, name: string) {
   if ((page.viewportSize()?.width || 0) < 700)
     await page.getByRole("button", { name: "打开导航", exact: true }).click();
@@ -212,6 +212,9 @@ test("a real delivery workspace preserves approvals, waiting work, code and revi
     dialog.getByText("保存节点访问凭据", { exact: true }),
   ).toBeVisible();
   await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("button", { name: "访问凭据", exact: true }),
+  ).toBeFocused();
   await navigate(page, "企业治理");
   await page.getByRole("tab", { name: "访问凭据", exact: true }).click();
   await page.getByRole("button", { name: "撤销", exact: true }).click();

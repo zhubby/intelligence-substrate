@@ -110,6 +110,7 @@ test("task collaboration context preserves delivery, source and revision", async
       exact: true,
     });
     await expect(context).toBeVisible();
+    await expect(context.locator(".ant-bubble")).toBeVisible();
     await expect(
       context.getByText("已进入工作项上下文；不表示模型已理解或执行。", {
         exact: true,

@@ -1,11 +1,21 @@
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
+  lazy,
+  Suspense,
   type ReactNode,
 } from "react";
 import { createRoot } from "react-dom/client";
+import {
+  Alert,
+  AppShell,
+  FocusTrap,
+  NativeSelect,
+  Notification,
+} from "@mantine/core";
 import {
   Activity,
   ArrowRight,
@@ -40,11 +50,32 @@ import {
 } from "./api";
 import { Workspace, type View } from "./context";
 import { Button, Form, Modal, Empty, Breadcrumb } from "./ui";
-import { Delivery } from "./pages/Delivery";
-import { Code, Quality } from "./pages/Engineering";
-import { Agents, Governance, Releases } from "./pages/Operations";
+import { ThemeToggle, WorkbenchProvider } from "./theme";
+import "@mantine/core/styles.layer.css";
+import "./styles/tokens.css";
 import "./styles.css";
-import "./looseleaf.css";
+import "./styles/workbench.css";
+
+const Delivery = lazy(() =>
+  import("./pages/Delivery").then((module) => ({ default: module.Delivery })),
+);
+const Code = lazy(() =>
+  import("./pages/Engineering").then((module) => ({ default: module.Code })),
+);
+const Quality = lazy(() =>
+  import("./pages/Engineering").then((module) => ({ default: module.Quality })),
+);
+const Releases = lazy(() =>
+  import("./pages/Operations").then((module) => ({ default: module.Releases })),
+);
+const Agents = lazy(() =>
+  import("./pages/Operations").then((module) => ({ default: module.Agents })),
+);
+const Governance = lazy(() =>
+  import("./pages/Operations").then((module) => ({
+    default: module.Governance,
+  })),
+);
 
 const navigation: {
   id: View;
@@ -111,6 +142,9 @@ function Login({ onLogin }: { onLogin: (actor: Actor) => void }) {
         </p>
       </div>
       <main className="login-panel">
+        <div className="login-theme">
+          <ThemeToggle />
+        </div>
         <div className="login-form">
           <span className="eyebrow">WORKSPACE ACCESS</span>
           <h2>进入研发工作台</h2>
@@ -175,26 +209,29 @@ function App() {
   const workspaceFocusRef = useRef<HTMLButtonElement>(null);
   const mobileWasOpen = useRef(false);
   const dialogOpener = useRef<HTMLElement | null>(null);
+  const dialogActive = useRef(false);
   const close = useCallback(() => {
     const opener = dialogOpener.current;
     dialogOpener.current = null;
+    dialogActive.current = false;
     setDialog(undefined);
     if (opener) {
       window.requestAnimationFrame(() => {
         if (opener.isConnected && !opener.hasAttribute("disabled")) {
           opener.focus();
+        } else {
+          workspaceFocusRef.current?.focus();
         }
       });
     }
   }, []);
-  const open = useCallback(
-    (title: string, node: ReactNode) => {
-      const active = document.activeElement;
+  const open = useCallback((title: string, node: ReactNode) => {
+    const active = document.activeElement;
+    if (!dialogActive.current)
       dialogOpener.current = active instanceof HTMLElement ? active : null;
-      setDialog({ title, node });
-    },
-    [],
-  );
+    dialogActive.current = true;
+    setDialog({ title, node });
+  }, []);
   useEffect(() => {
     const query = window.matchMedia("(max-width: 700px)");
     const update = () => setMobileViewport(query.matches);
@@ -202,24 +239,35 @@ function App() {
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
   }, []);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!mobileViewport) {
       const drawerWasOpen = mobile || mobileWasOpen.current;
       mobileWasOpen.current = false;
       setMobile(false);
       if (drawerWasOpen) {
-        window.requestAnimationFrame(() => workspaceFocusRef.current?.focus());
+        workspaceFocusRef.current?.focus();
       }
       return;
     }
     if (mobile) {
       mobileWasOpen.current = true;
-      window.requestAnimationFrame(() => mobileCloseRef.current?.focus());
+      mobileCloseRef.current?.focus();
     } else if (mobileWasOpen.current) {
       mobileWasOpen.current = false;
-      window.requestAnimationFrame(() => mobileMenuRef.current?.focus());
+      mobileMenuRef.current?.focus();
     }
   }, [mobile, mobileViewport]);
+  useEffect(() => {
+    if (!mobileViewport || !mobile || dialog) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobile(false);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [mobile, mobileViewport, dialog]);
   useEffect(() => {
     session()
       .then(setActor)
@@ -380,7 +428,13 @@ function App() {
       x.status === "awaiting_approval",
   ).length;
   const body = (
-    <div className="app-shell">
+    <AppShell
+      className="app-shell"
+      layout="alt"
+      header={{ height: 64 }}
+      navbar={{ width: 240, breakpoint: 700, collapsed: { mobile: !mobile } }}
+      padding={0}
+    >
       {mobileViewport && mobile && (
         <button
           type="button"
@@ -389,126 +443,140 @@ function App() {
           onClick={() => setMobile(false)}
         />
       )}
-      <aside
-        className={"sidebar " + (mobile ? "mobile-open" : "")}
-        aria-hidden={mobileViewport && !mobile ? true : undefined}
-        inert={mobileViewport && !mobile ? true : undefined}
-      >
-        <div className="sidebar-top">
-          <Brand compact />
-          <button
-            type="button"
-            className="icon-button mobile-close"
-            aria-label="关闭导航"
-            ref={mobileCloseRef}
-            onClick={() => setMobile(false)}
-          >
-            <X size={19} />
-          </button>
-        </div>
-        <div className="project-switch">
-          <span className="eyebrow">当前项目</span>
-          <div>
-            <span className="project-symbol">
-              {project?.title.slice(0, 1) || "P"}
-            </span>
-            <select
-              aria-label="选择项目"
-              value={projectId}
-              onChange={(e) => {
-                setProjectID(e.target.value);
-                close();
-              }}
+      <FocusTrap active={mobileViewport && mobile && !dialog}>
+        <AppShell.Navbar
+          className={"sidebar " + (mobile ? "mobile-open" : "")}
+          aria-hidden={mobileViewport && !mobile ? true : undefined}
+          inert={mobileViewport && !mobile ? true : undefined}
+        >
+          <div className="sidebar-top">
+            <Brand compact />
+            <button
+              type="button"
+              className="icon-button mobile-close"
+              aria-label="关闭导航"
+              ref={mobileCloseRef}
+              onClick={() => setMobile(false)}
             >
-              {projects.length ? (
-                projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))
-              ) : (
-                <option value="">尚无项目</option>
-              )}
-            </select>
-            <ChevronDown size={14} />
-          </div>
-          {actor.admin && (
-            <button type="button" className="text-button" onClick={createProject}>
-              <Plus size={13} />
-              新建项目
+              <X size={19} />
             </button>
-          )}
-        </div>
-        <nav aria-label="主导航">
-          {["交付空间", "平台管理"].map((group) => (
-            <div className="nav-group" key={group}>
-              <span className="nav-label">{group}</span>
-              {navigation
-                .filter((x) => x.group === group)
-                .map((x) => (
-                  <button
-                    type="button"
-                    key={x.id}
-                    className={view === x.id ? "nav-item active" : "nav-item"}
-                    onClick={() => navigate(x.id)}
-                  >
-                    <x.icon size={18} />
-                    <span>{x.title}</span>
-                    {x.id === "workspace" && decisions > 0 && (
-                      <span className="nav-count">{decisions}</span>
-                    )}
-                  </button>
-                ))}
-            </div>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="environment-note">
-            <span className="environment-dot" />
-            <span>企业内部工作空间</span>
           </div>
-          <button
-            type="button"
-            className="profile-button"
-            onClick={() =>
-              open(
-                "账户与会话",
-                <div className="detail-content">
-                  <h3>{actor.name}</h3>
-                  <p className="muted">
-                    {actor.admin ? "平台管理员" : "企业成员"} · {actor.id}
-                  </p>
-                  <Button
-                    secondary
-                    onClick={async () => {
-                      await api("auth/logout", { method: "POST", body: "{}" });
-                      close();
-                      setActor(undefined);
-                      setProjects([]);
-                      setProjectID("");
-                      setItems([]);
-                    }}
-                  >
-                    <LogOut size={15} />
-                    退出登录
-                  </Button>
-                </div>,
-              )
-            }
-          >
-            <span className="profile-avatar">
-              {actor.name.slice(0, 1).toUpperCase()}
-            </span>
-            <span>
-              {actor.name}
-              <small>{actor.admin ? "平台管理员" : "企业成员"}</small>
-            </span>
-            <ChevronDown size={13} />
-          </button>
-        </div>
-      </aside>
-      <div className="main-shell">
-        <header className="topbar">
+          <div className="project-switch">
+            <span className="eyebrow">当前项目</span>
+            <div>
+              <span className="project-symbol">
+                {project?.title.slice(0, 1) || "P"}
+              </span>
+              <NativeSelect
+                aria-label="选择项目"
+                value={projectId}
+                onChange={(e) => {
+                  setProjectID(e.target.value);
+                  close();
+                }}
+              >
+                {projects.length ? (
+                  projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">尚无项目</option>
+                )}
+              </NativeSelect>
+            </div>
+            {actor.admin && (
+              <button
+                type="button"
+                className="text-button"
+                onClick={createProject}
+              >
+                <Plus size={13} />
+                新建项目
+              </button>
+            )}
+          </div>
+          <nav aria-label="主导航">
+            {["交付空间", "平台管理"].map((group) => (
+              <div className="nav-group" key={group}>
+                <span className="nav-label">{group}</span>
+                {navigation
+                  .filter((x) => x.group === group)
+                  .map((x) => (
+                    <button
+                      type="button"
+                      key={x.id}
+                      className={view === x.id ? "nav-item active" : "nav-item"}
+                      aria-current={view === x.id ? "page" : undefined}
+                      onClick={() => navigate(x.id)}
+                    >
+                      <x.icon size={18} />
+                      <span>{x.title}</span>
+                      {x.id === "workspace" && decisions > 0 && (
+                        <span className="nav-count">{decisions}</span>
+                      )}
+                    </button>
+                  ))}
+              </div>
+            ))}
+          </nav>
+          <div className="sidebar-bottom">
+            <div className="environment-note">
+              <span className="environment-dot" />
+              <span>企业内部工作空间</span>
+            </div>
+            <button
+              type="button"
+              className="profile-button"
+              onClick={() =>
+                open(
+                  "账户与会话",
+                  <div className="detail-content">
+                    <h3>{actor.name}</h3>
+                    <p className="muted">
+                      {actor.admin ? "平台管理员" : "企业成员"} · {actor.id}
+                    </p>
+                    <Button
+                      secondary
+                      onClick={async () => {
+                        await api("auth/logout", {
+                          method: "POST",
+                          body: "{}",
+                        });
+                        close();
+                        setActor(undefined);
+                        setProjects([]);
+                        setProjectID("");
+                        setItems([]);
+                      }}
+                    >
+                      <LogOut size={15} />
+                      退出登录
+                    </Button>
+                  </div>,
+                )
+              }
+            >
+              <span className="profile-avatar">
+                {actor.name.slice(0, 1).toUpperCase()}
+              </span>
+              <span>
+                {actor.name}
+                <small>{actor.admin ? "平台管理员" : "企业成员"}</small>
+              </span>
+              <ChevronDown size={13} />
+            </button>
+          </div>
+        </AppShell.Navbar>
+      </FocusTrap>
+      <AppShell.Main
+        component="div"
+        className="main-shell"
+        inert={mobileViewport && mobile ? true : undefined}
+        aria-hidden={mobileViewport && mobile ? true : undefined}
+      >
+        <AppShell.Header className="topbar">
           <button
             type="button"
             className="icon-button mobile-menu"
@@ -525,7 +593,7 @@ function App() {
           </Breadcrumb>
           <div className="topbar-actions">
             {items.some((x) => x.kind === "goal") && (
-              <select
+              <NativeSelect
                 aria-label="选择交付目标"
                 className="goal-select"
                 value={goalId}
@@ -538,13 +606,14 @@ function App() {
                       {x.title}
                     </option>
                   ))}
-              </select>
+              </NativeSelect>
             )}
+            <ThemeToggle />
             <button
               type="button"
               className="icon-button"
               aria-label="刷新工作空间"
-            ref={workspaceFocusRef}
+              ref={workspaceFocusRef}
               onClick={() => refresh().catch((e) => setError(e.message))}
             >
               <RefreshCw size={16} />
@@ -577,9 +646,9 @@ function App() {
               <CircleHelp size={17} />
             </button>
           </div>
-        </header>
+        </AppShell.Header>
         {error && (
-          <div className="global-error" role="alert">
+          <Alert color="red" className="global-error" role="alert">
             <span>{error}</span>
             <button
               type="button"
@@ -592,50 +661,58 @@ function App() {
             >
               重试
             </button>
-          </div>
+          </Alert>
         )}
         <main id="main-content" className="main-content" key={projectId}>
-          {!project ? (
-            <div className="welcome-space">
-              <span className="eyebrow">INTELLIGENCE SUBSTRATE</span>
-              <h1>每次交付，从这里开始。</h1>
-              <p>把业务目标、协作开发和交付证据连接到一个受控的工作空间。</p>
-              <Empty
-                icon={<Sparkles size={30} />}
-                title={actor.admin ? "创建第一个项目" : "等待项目授权"}
-                description={
-                  actor.admin
-                    ? "建立项目范围与模型访问策略，然后定义首个业务目标。"
-                    : "请项目负责人为此企业账户授予项目角色。"
-                }
-                action={
-                  actor.admin ? (
-                    <Button onClick={createProject}>
-                      <Plus size={16} />
-                      创建项目
-                    </Button>
-                  ) : undefined
-                }
-              />
-            </div>
-          ) : loading ? (
-            <div className="loading-panel">
-              <LoaderCircle className="spin" size={24} />
-              <p>正在加载项目空间…</p>
-            </div>
-          ) : view === "workspace" ? (
-            <Delivery />
-          ) : view === "code" ? (
-            <Code />
-          ) : view === "quality" ? (
-            <Quality />
-          ) : view === "releases" ? (
-            <Releases />
-          ) : view === "agents" ? (
-            <Agents />
-          ) : (
-            <Governance />
-          )}
+          <Suspense
+            fallback={
+              <div className="loading-panel" role="status">
+                正在载入工作台页面…
+              </div>
+            }
+          >
+            {!project ? (
+              <div className="welcome-space">
+                <span className="eyebrow">INTELLIGENCE SUBSTRATE</span>
+                <h1>每次交付，从这里开始。</h1>
+                <p>把业务目标、协作开发和交付证据连接到一个受控的工作空间。</p>
+                <Empty
+                  icon={<Sparkles size={30} />}
+                  title={actor.admin ? "创建第一个项目" : "等待项目授权"}
+                  description={
+                    actor.admin
+                      ? "建立项目范围与模型访问策略，然后定义首个业务目标。"
+                      : "请项目负责人为此企业账户授予项目角色。"
+                  }
+                  action={
+                    actor.admin ? (
+                      <Button onClick={createProject}>
+                        <Plus size={16} />
+                        创建项目
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              </div>
+            ) : loading ? (
+              <div className="loading-panel">
+                <LoaderCircle className="spin" size={24} />
+                <p>正在加载项目空间…</p>
+              </div>
+            ) : view === "workspace" ? (
+              <Delivery />
+            ) : view === "code" ? (
+              <Code />
+            ) : view === "quality" ? (
+              <Quality />
+            ) : view === "releases" ? (
+              <Releases />
+            ) : view === "agents" ? (
+              <Agents />
+            ) : (
+              <Governance />
+            )}
+          </Suspense>
         </main>
         <footer className="app-footer">
           <span>Intelligence Substrate</span>
@@ -644,19 +721,23 @@ function App() {
             交付状态以验证记录为准
           </span>
         </footer>
-      </div>
+      </AppShell.Main>
       {dialog && (
         <Modal title={dialog.title} onClose={close}>
           {dialog.node}
         </Modal>
       )}
       {notice && (
-        <div className="toast" role="status">
-          <Check size={16} />
+        <Notification
+          className="toast"
+          role="status"
+          icon={<Check size={16} />}
+          withCloseButton={false}
+        >
           {notice}
-        </div>
+        </Notification>
       )}
-    </div>
+    </AppShell>
   );
   return project ? (
     <Workspace.Provider
@@ -702,6 +783,8 @@ function App() {
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <WorkbenchProvider>
+      <App />
+    </WorkbenchProvider>
   </React.StrictMode>,
 );

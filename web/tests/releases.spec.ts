@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext } from "@playwright/test";
+import { test, expect, type APIRequestContext } from "./theme";
 
 // Channel receipts and human attestations in this fixture are synthetic. This
 // checks the workbench and authorization contract, not an actual store release.

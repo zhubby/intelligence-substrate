@@ -4,6 +4,7 @@ import { api, date, targets, type Resource } from "./api";
 import { useWorkspace } from "./context";
 import { Badge, Button, Form, SectionHeading, type Field } from "./ui";
 import { ReleaseFeedback } from "./ReleaseFeedback";
+import { ChartPanel } from "./ChartPanel";
 
 interface Observation {
   id: string;
@@ -522,6 +523,16 @@ export function DeliveryMetrics() {
                 <small>尚不能计算效率提升比例</small>
               </div>
             </dl>
+            <ChartPanel
+              title="有效观测样本"
+              description="来自当前筛选范围的实际样本数；样本数量不是效率趋势，未采集的均值和比率仍为待采集。"
+              data={[
+                { name: "预览观测", value: report.previewSamples },
+                { name: "业务验收观测", value: report.acceptanceSamples },
+                { name: "人工投入区间", value: report.effortSamples },
+                { name: "已结束发布操作", value: report.publishExecutions },
+              ]}
+            />
             <section className="cost-block" aria-label="指标口径与缺失">
               <h3>指标口径与缺失</h3>
               {report.gaps.map((gap) => (

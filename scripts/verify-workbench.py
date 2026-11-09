@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+from itertools import product
 import os
 from pathlib import Path
 import shlex
@@ -24,7 +25,8 @@ def main():
     suites = sorted(path.name.removesuffix(".spec.ts") for path in (repo / "web/tests").glob("*.spec.ts"))
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--suite", action="append", choices=suites, help="Repeat to select suites; defaults to all")
-    parser.add_argument("--projects", nargs="+", choices=["desktop", "mobile"], default=["desktop", "mobile"])
+    parser.add_argument("--projects", nargs="+", choices=["desktop", "tablet", "mobile"], default=["desktop", "mobile"])
+    parser.add_argument("--themes", nargs="+", choices=["dark", "light"], default=["dark"])
     parser.add_argument("--work-dir", type=Path, help="New evidence directory; never overwrites existing files")
     args = parser.parse_args()
     # Preview links come from platform records; do not collide with the user's
@@ -45,7 +47,7 @@ def main():
         browser = str(chrome)
     env = {key: value for key, value in os.environ.items() if not key.startswith("IS_")}
     report = {"startedAt": datetime.now(timezone.utc).isoformat(), "passed": False, "steps": [], "projects": [],
-              "syntheticLocalModel": True, "paidModelCalled": False, "sourceSHA256": {}, "workDir": str(root)}
+              "syntheticLocalModel": True, "paidModelCalled": False, "sourceSHA256": {}, "themes": args.themes, "workDir": str(root)}
 
     def save():
         (root / "result.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
@@ -96,13 +98,13 @@ def main():
         report["platformBinarySHA256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
         for suite in args.suite or suites:
             report["sourceSHA256"][suite + ".spec.ts"] = hashlib.sha256((repo / "web/tests" / (suite + ".spec.ts")).read_bytes()).hexdigest()
-            for project in args.projects:
-                label = suite + "-" + project
+            for project, color_scheme in product(args.projects, args.themes):
+                label = suite + "-" + project + "-" + color_scheme
                 screenshots = root / "screenshots" / label
                 screenshots.mkdir(parents=True)
                 result_path = root / (label + ".json")
                 model = "local-clarification-fixture" if suite == "clarifications" else "local-cost-fixture" if suite == "delivery-costs" else "local-requirements-fixture" if suite == "requirement-drafts" else "local-plan-fixture" if suite in {"plan-generation", "designs", "blueprints"} else ""
-                width, height = (390, 844) if project == "mobile" else (1440, 1000)
+                width, height = (390, 844) if project == "mobile" else (768, 1024) if project == "tablet" else (1440, 1000)
                 config = {
                     "testDir": str(repo / "web/tests"), "testMatch": suite + ".spec.ts", "workers": 1, "retries": 0, "timeout": 60000,
                     "reporter": [["json", {"outputFile": str(result_path)}]], "outputDir": str(root / (label + "-traces")),
@@ -121,9 +123,9 @@ def main():
                 config_path.write_text("import {defineConfig} from " + json.dumps(str(repo / "web/node_modules/@playwright/test/index.mjs")) + ";\nexport default defineConfig(" + json.dumps(config) + ");\n")
                 count_before = len(calls)
                 code = run(label, ["node", repo / "web/node_modules/@playwright/test/cli.js", "test", "--config", config_path], environment={**env,
-                    "IS_CLARIFICATION_SCREENSHOTS": str(screenshots), "IS_COST_SCREENSHOTS": str(screenshots), "IS_INCIDENT_SCREENSHOTS": str(screenshots), "IS_REQUIREMENT_SCREENSHOTS": str(screenshots), "IS_PLAN_SCREENSHOTS": str(screenshots), "IS_QUALITY_SCREENSHOTS": str(screenshots), "IS_PREVIEW_SCREENSHOTS": str(screenshots)})
+                    "IS_WORKBENCH_THEME": color_scheme, "IS_WORKBENCH_SCREENSHOTS": str(screenshots), "IS_CLARIFICATION_SCREENSHOTS": str(screenshots), "IS_COST_SCREENSHOTS": str(screenshots), "IS_INCIDENT_SCREENSHOTS": str(screenshots), "IS_REQUIREMENT_SCREENSHOTS": str(screenshots), "IS_PLAN_SCREENSHOTS": str(screenshots), "IS_QUALITY_SCREENSHOTS": str(screenshots), "IS_PREVIEW_SCREENSHOTS": str(screenshots)})
                 result = json.loads(result_path.read_text())
-                item = {"suite": suite, "name": project, "exitCode": code, "stats": result["stats"], "stateDir": str(root / (label + "-state")), "localProviderCalls": calls[count_before:]}
+                item = {"suite": suite, "name": project, "theme": color_scheme, "viewport": {"width": width, "height": height}, "exitCode": code, "stats": result["stats"], "stateDir": str(root / (label + "-state")), "localProviderCalls": calls[count_before:]}
                 report["projects"].append(item)
                 save()
                 assert code == 0 and not any(result["stats"][key] for key in ["skipped", "unexpected", "flaky"]), f"{label} failed; see {root}"

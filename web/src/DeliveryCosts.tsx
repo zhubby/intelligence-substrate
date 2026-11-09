@@ -3,6 +3,8 @@ import { Plus, RefreshCw } from "lucide-react";
 import { api, date, money, type Resource } from "./api";
 import { useWorkspace } from "./context";
 import { Badge, Button, Form, SectionHeading } from "./ui";
+import { ChartPanel } from "./ChartPanel";
+import { knownSeries } from "./presentation";
 
 const categories: Record<string, string> = {
   build: "构建",
@@ -353,6 +355,25 @@ export function DeliveryCosts() {
               {money(report.exposureCents)}
             </p>
           </section>
+          <div className="charts-grid">
+            <ChartPanel
+              title="已记录成本构成"
+              description="仅展示报告中可核算的模型估算、人工核对与外部登记；不含待核对预留金额。"
+              format="money"
+              variant="donut"
+              data={knownSeries(report as unknown as Record<string, unknown>, {
+                modelEstimatedCents: "模型估算",
+                modelReconciledCents: "模型已核对",
+                externalRecordedCents: "外部已登记",
+              })}
+            />
+            <ChartPanel
+              title="已登记外部费用分布"
+              description="只展示有登记依据的类别，未知费用不会补零；零金额保留。"
+              format="money"
+              data={knownSeries(report.externalByCategory, categories)}
+            />
+          </div>
           <section className="cost-block" aria-label="费用类别">
             <h3>外部费用类别</h3>
             <dl className="cost-breakdown">

@@ -1,4 +1,4 @@
-import { test as base, expect, type APIRequestContext } from "@playwright/test";
+import { test as base, expect, type APIRequestContext } from "./theme";
 
 type OwnerAuth = {
   csrf: string;

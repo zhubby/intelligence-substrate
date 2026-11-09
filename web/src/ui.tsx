@@ -1,24 +1,22 @@
-import {
-  useId,
-  useState,
-  type FormEvent,
-  type ReactNode,
-} from "react";
+import { useId, useState, type FormEvent, type ReactNode } from "react";
 import {
   ArrowUpRight,
   Check,
   ChevronRight,
   LoaderCircle,
   Plus,
-  X,
 } from "lucide-react";
-import { states, type Data } from "./api";
 import {
-  LooseleafBadge,
-  LooseleafButton,
-  LooseleafDialog,
-  LooseleafPaper,
-} from "./components/ui/looseleaf";
+  Badge as MantineBadge,
+  Button as MantineButton,
+  Checkbox,
+  Input,
+  Modal as MantineModal,
+  NativeSelect,
+  Paper,
+  Textarea,
+} from "@mantine/core";
+import { states, type Data } from "./api";
 import { cn } from "./components/ui/cn";
 
 const statusTones: Record<
@@ -104,13 +102,15 @@ const statusTones: Record<
 export function Badge({ status }: { status: string }) {
   const tone = statusTones[status] || "neutral";
   return (
-    <LooseleafBadge
-      tone={tone}
-      className={cn("badge status-" + status, "status-sticker")}
+    <MantineBadge
+      component="span"
+      color={tone === "neutral" ? "gray" : tone}
+      variant="light"
+      className={cn("badge status-" + status)}
     >
-      <span />
+      <span className="status-dot" aria-hidden="true" />
       {states[status] || status}
-    </LooseleafBadge>
+    </MantineBadge>
   );
 }
 export function Empty({
@@ -125,12 +125,12 @@ export function Empty({
   icon?: ReactNode;
 }) {
   return (
-    <LooseleafPaper className="empty-state">
+    <Paper className="empty-state" withBorder>
       <div className="empty-symbol">{icon || <Plus size={26} />}</div>
       <h3>{title}</h3>
       <p>{description}</p>
       {action}
-    </LooseleafPaper>
+    </Paper>
   );
 }
 export function Button({
@@ -139,13 +139,13 @@ export function Button({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { secondary?: boolean }) {
   return (
-    <LooseleafButton
+    <MantineButton
       {...props}
-      variant={secondary ? "outline" : "default"}
+      variant={secondary ? "default" : "filled"}
       className={cn(secondary ? "button secondary" : "button", props.className)}
     >
       {children}
-    </LooseleafButton>
+    </MantineButton>
   );
 }
 export function SectionHeading({
@@ -180,34 +180,25 @@ export function Modal({
   onClose: () => void;
 }) {
   return (
-    <LooseleafDialog.Root
-      open
-      onOpenChange={(open) => {
-        if (!open) onClose();
+    <MantineModal
+      opened
+      onClose={onClose}
+      title={title}
+      size="lg"
+      centered
+      returnFocus={false}
+      closeButtonProps={{ "aria-label": "关闭对话框" }}
+      transitionProps={{ duration: 150 }}
+      classNames={{
+        content: "modal",
+        body: "modal-body",
+        header: "modal-header",
+        title: "modal-title",
+        overlay: "modal-overlay",
       }}
     >
-      <LooseleafDialog.Portal>
-        <LooseleafDialog.Overlay className="modal-overlay ll-dialog-overlay" />
-        <LooseleafDialog.Content
-          className="modal ll-dialog-content"
-          aria-describedby={undefined}
-        >
-          <header>
-            <LooseleafDialog.Title>{title}</LooseleafDialog.Title>
-            <LooseleafDialog.Close asChild>
-              <button
-                className="icon-button"
-                aria-label="关闭对话框"
-                type="button"
-              >
-                <X size={20} />
-              </button>
-            </LooseleafDialog.Close>
-          </header>
-          {children}
-        </LooseleafDialog.Content>
-      </LooseleafDialog.Portal>
-    </LooseleafDialog.Root>
+      {children}
+    </MantineModal>
   );
 }
 export interface Field {
@@ -266,63 +257,77 @@ export function Form({
     }
   }
   return (
-    <form className="form ll-form" onSubmit={save}>
+    <form className="form" onSubmit={save}>
       {fields.map((f) => (
-        <label
+        <div
           className={f.type === "checkbox" ? "checkbox-field" : "field"}
           key={f.name}
         >
-          <span>
-            {f.type === "checkbox" && (
-              <input
-                type="checkbox"
-                name={f.name}
-                aria-label={f.label}
-                aria-describedby={f.hint ? formID + f.name : undefined}
-                defaultChecked={f.defaultValue}
-              />
-            )}{" "}
-            {f.label}
-          </span>
-          {f.type === "textarea" ? (
-            <textarea
+          {f.type === "checkbox" ? (
+            <Checkbox
               name={f.name}
+              label={f.label}
               aria-label={f.label}
-              aria-describedby={f.hint ? formID + f.name : undefined}
-              required={f.required}
-              placeholder={f.placeholder}
-              defaultValue={f.defaultValue}
-              rows={5}
+              description={f.hint}
+              defaultChecked={f.defaultValue}
             />
-          ) : f.type === "select" ? (
-            <select
-              name={f.name}
-              aria-label={f.label}
-              aria-describedby={f.hint ? formID + f.name : undefined}
-              defaultValue={f.defaultValue}
+          ) : (
+            <Input.Wrapper
+              id={formID + f.name}
+              label={f.label}
               required={f.required}
+              description={f.hint}
+              inputWrapperOrder={["label", "input", "description", "error"]}
             >
-              {!f.defaultValue && <option value="">请选择</option>}
-              {Object.entries(f.options || {}).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          ) : f.type !== "checkbox" ? (
-            <input
-              type={f.type || "text"}
-              name={f.name}
-              aria-label={f.label}
-              aria-describedby={f.hint ? formID + f.name : undefined}
-              required={f.required}
-              placeholder={f.placeholder}
-              defaultValue={f.defaultValue}
-              step={f.step ?? (f.type === "number" ? "0.01" : undefined)}
-            />
-          ) : null}
-          {f.hint && <small id={formID + f.name}>{f.hint}</small>}
-        </label>
+              {f.type === "textarea" ? (
+                <Textarea
+                  id={formID + f.name}
+                  name={f.name}
+                  aria-label={f.label}
+                  aria-describedby={
+                    f.hint ? formID + f.name + "-description" : undefined
+                  }
+                  required={f.required}
+                  placeholder={f.placeholder}
+                  defaultValue={f.defaultValue}
+                  rows={5}
+                />
+              ) : f.type === "select" ? (
+                <NativeSelect
+                  id={formID + f.name}
+                  name={f.name}
+                  aria-label={f.label}
+                  aria-describedby={
+                    f.hint ? formID + f.name + "-description" : undefined
+                  }
+                  defaultValue={f.defaultValue}
+                  required={f.required}
+                >
+                  {!f.defaultValue && <option value="">请选择</option>}
+                  {Object.entries(f.options || {}).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </NativeSelect>
+              ) : (
+                <Input
+                  id={formID + f.name}
+                  type={f.type || "text"}
+                  name={f.name}
+                  aria-label={f.label}
+                  aria-describedby={
+                    f.hint ? formID + f.name + "-description" : undefined
+                  }
+                  required={f.required}
+                  placeholder={f.placeholder}
+                  defaultValue={f.defaultValue}
+                  step={f.step ?? (f.type === "number" ? "0.01" : undefined)}
+                />
+              )}
+            </Input.Wrapper>
+          )}
+        </div>
       ))}
       {children}
       {error && (

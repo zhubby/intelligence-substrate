@@ -31,6 +31,10 @@ import { OrganizationTeams } from "../OrganizationTeams";
 import { DeliveryCosts } from "../DeliveryCosts";
 import { DeliveryMetrics } from "../DeliveryMetrics";
 import { FrozenReleaseIssues, ReleaseIssues } from "../ReleaseIssues";
+import { OverviewGrid, StatCard } from "../Overview";
+import { ChartPanel } from "../ChartPanel";
+import { MessageBubble } from "../Specialist";
+import { WorkbenchTabs } from "../WorkbenchTabs";
 
 export function Releases() {
   const w = useWorkspace();
@@ -63,6 +67,33 @@ export function Releases() {
           </Button>
         }
       />
+      <OverviewGrid label="构建与发布概览">
+        <StatCard
+          label="候选版本"
+          value={releases.length}
+          note="绑定需求、提交与制品摘要"
+          icon={<Upload size={17} />}
+        />
+        <StatCard
+          label="待发布批准"
+          value={
+            releases.filter((release) => release.status === "awaiting_approval")
+              .length
+          }
+          note="仅有权限的人可批准正式版本"
+          icon={<ShieldCheck size={17} />}
+          tone="warning"
+        />
+        <StatCard
+          label="已完成交付"
+          value={
+            releases.filter((release) => release.status === "delivered").length
+          }
+          note="全部必选渠道完成并独立验证"
+          icon={<Check size={17} />}
+          tone="success"
+        />
+      </OverviewGrid>
       <RuntimePanel />
       {!releases.length ? (
         <Empty
@@ -154,7 +185,15 @@ export function Releases() {
                   App Store 资料由企业预备，本候选未绑定资料清单。
                 </p>
               )}
-            <div className="release-targets">
+            <div className="release-matrix-label" aria-hidden="true">
+              <span>交付渠道与证据</span>
+              <span>当前状态</span>
+              <span>受控操作</span>
+            </div>
+            <div
+              className="release-targets"
+              aria-label={release.title + "渠道状态矩阵"}
+            >
               {release.data.targets.map((t: Data) => (
                 <div className="release-target" key={t.target}>
                   <div className="target-platform">
@@ -466,6 +505,14 @@ function Token({ token }: { token: string }) {
 export function Agents() {
   const w = useWorkspace();
   const workers = w.select("worker");
+  const tasks = w
+    .select("task")
+    .filter(
+      (task) =>
+        !w.goal ||
+        (task.goalId === w.goal.id &&
+          task.data.requirementRevision === w.goal.revision),
+    );
   return (
     <>
       <SectionHeading
@@ -481,6 +528,44 @@ export function Agents() {
             注册节点
           </Button>
         }
+      />
+      <OverviewGrid label="执行环境概览">
+        <StatCard
+          label="已注册节点"
+          value={workers.length}
+          note="注册不表示已连接或可执行"
+          icon={<Terminal size={17} />}
+        />
+        <StatCard
+          label="正在执行"
+          value={tasks.filter((task) => task.status === "running").length}
+          note="仅统计平台实际运行状态"
+          icon={<Workflow size={17} />}
+          tone="accent"
+        />
+        <StatCard
+          label="异常与阻塞"
+          value={
+            tasks.filter((task) =>
+              ["blocked", "failed", "suspended"].includes(task.status),
+            ).length
+          }
+          note="恢复须保留原租约与副作用核对"
+          icon={<ShieldCheck size={17} />}
+          tone="warning"
+        />
+      </OverviewGrid>
+      <ChartPanel
+        title="角色工作负载"
+        description="当前范围内待领与运行工作项数量，不代表节点在线或模型实时活动。"
+        data={Object.keys(roles).map((role) => ({
+          name: roles[role],
+          value: tasks.filter(
+            (task) =>
+              task.data.role === role &&
+              ["pending", "running"].includes(task.status),
+          ).length,
+        }))}
       />
       <div className="role-strip">
         {[
@@ -499,9 +584,7 @@ export function Agents() {
             <strong>{roles[r]}</strong>
             <small>
               {
-                w
-                  .select("task")
-                  .filter((t) => t.data.role === r && t.status === "running")
+                tasks.filter((t) => t.data.role === r && t.status === "running")
                   .length
               }{" "}
               个执行中
@@ -634,12 +717,33 @@ export function Governance() {
         title="企业治理与运行"
         description="项目身份、决策和执行记录共同构成可追溯的交付历史。"
       />
-      <div
-        className="tabs governance-tabs"
-        role="tablist"
-        aria-label="治理视图"
-      >
-        {[
+      <OverviewGrid label="项目治理概览">
+        <StatCard
+          label="项目成员记录"
+          value={w.select("member").length}
+          note="项目角色与权限保留原有授权边界"
+          icon={<ShieldCheck size={17} />}
+        />
+        <StatCard
+          label="协作消息记录"
+          value={w.select("message").length}
+          note="发送、接收和进入执行上下文分别记录"
+          icon={<Workflow size={17} />}
+          tone="accent"
+        />
+        <StatCard
+          label="审计事件"
+          value={w.audits.length}
+          note="当前读取范围 · 含决策与执行来源"
+          icon={<Check size={17} />}
+        />
+      </OverviewGrid>
+      <WorkbenchTabs
+        label="治理视图"
+        value={tab}
+        onChange={setTab}
+        className="governance-tabs"
+        items={[
           ["audit", "审计记录"],
           ["members", "项目成员"],
           ["teams", "组织团队"],
@@ -649,76 +753,176 @@ export function Governance() {
           ["costs", "交付成本"],
           ["metrics", "交付效能"],
           ...(w.can("owner") ? [["tokens", "访问凭据"]] : []),
-        ].map(([k, v]) => (
-          <button
-            type="button"
-            key={k}
-            role="tab"
-            aria-selected={tab === k}
-            className={tab === k ? "active" : ""}
-            onClick={() => setTab(k)}
-          >
-            {v}
-          </button>
-        ))}
-      </div>
-      {tab === "tokens" && <Credentials />}
-      {tab === "messages" && <Messages />}
-      {tab === "costs" && <DeliveryCosts />}
-      {tab === "metrics" && <DeliveryMetrics />}
-      {tab === "audit" && (
-        <div className="audit-timeline">
-          {[...w.audits].reverse().map((event) => (
-            <div className="audit-event" key={event.id}>
-              <span className="audit-mark" />
-              <div>
-                <strong>{actionName(event.action)}</strong>
-                <span className="mono">{event.resourceId?.slice(-12)}</span>
-                <small>
-                  {date(event.at)} · {event.actorId} ·{" "}
-                  {event.detail.status || event.detail.code || ""}
-                </small>
+        ]}
+      >
+        {tab === "tokens" && <Credentials />}
+        {tab === "messages" && <Messages />}
+        {tab === "costs" && <DeliveryCosts />}
+        {tab === "metrics" && <DeliveryMetrics />}
+        {tab === "audit" && (
+          <div className="audit-timeline">
+            {[...w.audits].reverse().map((event) => (
+              <div className="audit-event" key={event.id}>
+                <span className="audit-mark" />
+                <div>
+                  <strong>{actionName(event.action)}</strong>
+                  <span className="mono">{event.resourceId?.slice(-12)}</span>
+                  <small>
+                    {date(event.at)} · {event.actorId} ·{" "}
+                    {event.detail.status || event.detail.code || ""}
+                  </small>
+                </div>
+                <span className="audit-hash mono" title={event.hash}>
+                  {event.hash.slice(0, 12)}
+                </span>
               </div>
-              <span className="audit-hash mono" title={event.hash}>
-                {event.hash.slice(0, 12)}
-              </span>
-            </div>
-          ))}
-          {!w.audits.length && (
-            <Empty
-              title="暂无审计记录"
-              description="需求、方案、执行与发布操作会在这里留下记录。"
+            ))}
+            {!w.audits.length && (
+              <Empty
+                title="暂无审计记录"
+                description="需求、方案、执行与发布操作会在这里留下记录。"
+              />
+            )}
+          </div>
+        )}
+        {tab === "members" && <Members />}
+        {tab === "teams" && <OrganizationTeams />}
+        {tab === "knowledge" && (
+          <>
+            <SectionHeading
+              title="项目知识与来源"
+              action={
+                <Button
+                  disabled={!w.can("product", "architect", "developer")}
+                  onClick={() =>
+                    w.open(
+                      "添加项目知识",
+                      <Form
+                        fields={[
+                          { name: "title", label: "知识标题", required: true },
+                          { name: "source", label: "来源" },
+                          {
+                            name: "content",
+                            label: "内容",
+                            type: "textarea",
+                            required: true,
+                          },
+                        ]}
+                        onSubmit={async (v) => {
+                          await w.run("knowledge.create", {
+                            ...v,
+                            projectId: w.project.id,
+                          });
+                          w.close();
+                        }}
+                      />,
+                    )
+                  }
+                >
+                  <Plus size={15} />
+                  添加知识
+                </Button>
+              }
             />
-          )}
-        </div>
-      )}
-      {tab === "members" && <Members />}
-      {tab === "teams" && <OrganizationTeams />}
-      {tab === "knowledge" && (
-        <>
-          <SectionHeading
-            title="项目知识与来源"
-            action={
-              <Button
-                disabled={!w.can("product", "architect", "developer")}
+            {knowledge.map((k) => (
+              <button
+                type="button"
+                className="resource-row clickable"
+                key={k.id}
                 onClick={() =>
                   w.open(
-                    "添加项目知识",
+                    k.title,
+                    <div className="detail-content">
+                      <p className="muted">
+                        来源：{k.data.source || "项目内记录"}
+                      </p>
+                      <p className="preserve-lines">{k.data.content}</p>
+                      {k.status !== "superseded" &&
+                        w.can("product", "architect", "developer") && (
+                          <Button
+                            secondary
+                            onClick={() =>
+                              w.open(
+                                "修订项目知识",
+                                <Form
+                                  fields={[
+                                    {
+                                      name: "content",
+                                      label: "知识内容",
+                                      type: "textarea",
+                                      required: true,
+                                      defaultValue: k.data.content,
+                                    },
+                                    {
+                                      name: "source",
+                                      label: "来源",
+                                      defaultValue: k.data.source,
+                                    },
+                                    {
+                                      name: "reason",
+                                      label: "修订原因",
+                                      required: true,
+                                    },
+                                  ]}
+                                  submit="保存新版本"
+                                  onSubmit={async (v) => {
+                                    await w.run("knowledge.revise", {
+                                      id: k.id,
+                                      ...v,
+                                    });
+                                    w.close();
+                                  }}
+                                />,
+                              )
+                            }
+                          >
+                            创建新版本
+                          </Button>
+                        )}
+                    </div>,
+                  )
+                }
+              >
+                <Workflow size={18} />
+                <span>
+                  {k.title}
+                  <small>
+                    {k.data.source || "项目内记录"} · v{k.revision}
+                  </small>
+                </span>
+                <ExternalLink size={14} />
+              </button>
+            ))}
+            {!knowledge.length && (
+              <Empty
+                title="暂无项目知识"
+                description="记录业务背景、领域概念和设计决策，保留版本与来源。"
+              />
+            )}
+          </>
+        )}
+        {tab === "policies" && (
+          <div className="policy-list">
+            {w.can("owner") && (
+              <Button
+                secondary
+                onClick={() =>
+                  w.open(
+                    "调整项目模型访问策略",
                     <Form
                       fields={[
-                        { name: "title", label: "知识标题", required: true },
-                        { name: "source", label: "来源" },
                         {
-                          name: "content",
-                          label: "内容",
-                          type: "textarea",
-                          required: true,
+                          name: "allowExternalModels",
+                          label: "允许访问外部模型",
+                          type: "checkbox",
+                          defaultValue: w.project.data.allowExternalModels,
                         },
                       ]}
+                      submit="保存策略"
                       onSubmit={async (v) => {
-                        await w.run("knowledge.create", {
+                        await w.run("projects.policy", {
+                          id: w.project.id,
                           ...v,
-                          projectId: w.project.id,
                         });
                         w.close();
                       }}
@@ -726,155 +930,45 @@ export function Governance() {
                   )
                 }
               >
-                <Plus size={15} />
-                添加知识
+                调整外部模型访问
               </Button>
-            }
-          />
-          {knowledge.map((k) => (
-            <button
-              type="button"
-              className="resource-row clickable"
-              key={k.id}
-              onClick={() =>
-                w.open(
-                  k.title,
-                  <div className="detail-content">
-                    <p className="muted">
-                      来源：{k.data.source || "项目内记录"}
-                    </p>
-                    <p className="preserve-lines">{k.data.content}</p>
-                    {k.status !== "superseded" &&
-                      w.can("product", "architect", "developer") && (
-                        <Button
-                          secondary
-                          onClick={() =>
-                            w.open(
-                              "修订项目知识",
-                              <Form
-                                fields={[
-                                  {
-                                    name: "content",
-                                    label: "知识内容",
-                                    type: "textarea",
-                                    required: true,
-                                    defaultValue: k.data.content,
-                                  },
-                                  {
-                                    name: "source",
-                                    label: "来源",
-                                    defaultValue: k.data.source,
-                                  },
-                                  {
-                                    name: "reason",
-                                    label: "修订原因",
-                                    required: true,
-                                  },
-                                ]}
-                                submit="保存新版本"
-                                onSubmit={async (v) => {
-                                  await w.run("knowledge.revise", {
-                                    id: k.id,
-                                    ...v,
-                                  });
-                                  w.close();
-                                }}
-                              />,
-                            )
-                          }
-                        >
-                          创建新版本
-                        </Button>
-                      )}
-                  </div>,
-                )
-              }
-            >
-              <Workflow size={18} />
-              <span>
-                {k.title}
-                <small>
-                  {k.data.source || "项目内记录"} · v{k.revision}
-                </small>
-              </span>
-              <ExternalLink size={14} />
-            </button>
-          ))}
-          {!knowledge.length && (
-            <Empty
-              title="暂无项目知识"
-              description="记录业务背景、领域概念和设计决策，保留版本与来源。"
-            />
-          )}
-        </>
-      )}
-      {tab === "policies" && (
-        <div className="policy-list">
-          {w.can("owner") && (
-            <Button
-              secondary
-              onClick={() =>
-                w.open(
-                  "调整项目模型访问策略",
-                  <Form
-                    fields={[
-                      {
-                        name: "allowExternalModels",
-                        label: "允许访问外部模型",
-                        type: "checkbox",
-                        defaultValue: w.project.data.allowExternalModels,
-                      },
-                    ]}
-                    submit="保存策略"
-                    onSubmit={async (v) => {
-                      await w.run("projects.policy", {
-                        id: w.project.id,
-                        ...v,
-                      });
-                      w.close();
-                    }}
-                  />,
-                )
-              }
-            >
-              调整外部模型访问
-            </Button>
-          )}
-          {[
-            ["需求与方案", "需求基线、重大方案及正式发布由有权限的人批准。"],
-            [
-              "独立质量",
-              "开发主体不能为自己的制品提供独立验收；自动化证据来自授权质量节点。",
-            ],
-            [
-              "版本绑定",
-              "审批与验证绑定需求版本、代码提交和制品摘要，相关变更触发重新确认。",
-            ],
-            [
-              "执行控制",
-              "执行节点按项目、系统与能力领取任务，任务具有租约、重试和预算限制。",
-            ],
-            [
-              "外部模型",
-              w.project.data.allowExternalModels
-                ? "此项目允许按平台配置访问外部模型。"
-                : "此项目未授权外部模型访问。",
-            ],
-            [
-              "正式交付",
-              "全部必选目标发布并经过独立验证后，整体版本才标记为交付完成。",
-            ],
-          ].map(([title, text]) => (
-            <div key={title}>
-              <ShieldCheck size={19} />
-              <div>
-                <h3>{title}</h3>
-                <p>{text}</p>
+            )}
+            {[
+              ["需求与方案", "需求基线、重大方案及正式发布由有权限的人批准。"],
+              [
+                "独立质量",
+                "开发主体不能为自己的制品提供独立验收；自动化证据来自授权质量节点。",
+              ],
+              [
+                "版本绑定",
+                "审批与验证绑定需求版本、代码提交和制品摘要，相关变更触发重新确认。",
+              ],
+              [
+                "执行控制",
+                "执行节点按项目、系统与能力领取任务，任务具有租约、重试和预算限制。",
+              ],
+              [
+                "外部模型",
+                w.project.data.allowExternalModels
+                  ? "此项目允许按平台配置访问外部模型。"
+                  : "此项目未授权外部模型访问。",
+              ],
+              [
+                "正式交付",
+                "全部必选目标发布并经过独立验证后，整体版本才标记为交付完成。",
+              ],
+            ].map(([title, text]) => (
+              <div key={title}>
+                <ShieldCheck size={19} />
+                <div>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </WorkbenchTabs>
     </>
   );
 }
@@ -1095,14 +1189,16 @@ function Messages() {
             w.open(
               "协作消息",
               <div className="detail-content">
-                <p>
-                  {m.data.sender} → {m.data.recipient}
-                </p>
-                <p className="mono">{m.id}</p>
-                <pre className="run-log">
-                  {JSON.stringify(m.data.payload, null, 2)}
-                </pre>
-                {m.data.causationId && <p>前序 {m.data.causationId}</p>}
+                <MessageBubble>
+                  <p>
+                    {m.data.sender} → {m.data.recipient}
+                  </p>
+                  <p className="mono">{m.id}</p>
+                  <pre className="run-log">
+                    {JSON.stringify(m.data.payload, null, 2)}
+                  </pre>
+                  {m.data.causationId && <p>前序 {m.data.causationId}</p>}
+                </MessageBubble>
               </div>,
             )
           }

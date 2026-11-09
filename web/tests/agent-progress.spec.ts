@@ -212,3 +212,55 @@ test("disabled worker with a live original lease cannot reconcile its tool", asy
     dialog.getByText("原租约仍有效或待核实", { exact: true }),
   ).toBeVisible();
 });
+
+test("recorded execution steps expand with the keyboard without implying model thinking or replaying commands", async ({
+  page,
+  ownerSession,
+}, info) => {
+  const fixtureState = await fixture(page, ownerSession.csrf);
+  await open(
+    page,
+    fixtureState.project.id,
+    fixtureState.goal.id,
+    info.project.name === "mobile",
+  );
+  const writes: string[] = [];
+  page.on("request", (request) => {
+    if (request.method() === "POST" && request.url().includes("/commands/"))
+      writes.push(request.url());
+  });
+  await page
+    .getByRole("button", { name: "查看工作项：分析预约契约", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog");
+  const chain = dialog.getByRole("region", {
+    name: "已记录执行步骤",
+    exact: true,
+  });
+  await expect(chain.locator(".ant-thought-chain")).toBeVisible();
+  await expect(chain).toContainText("不是模型内部思维");
+  await expect(chain).toContainText("结果待核对");
+  const first = chain.getByRole("button", {
+    name: "步骤 1 · read",
+    exact: true,
+  });
+  await expect(first).toHaveAttribute("aria-expanded", "false");
+  await first.focus();
+  await page.keyboard.press("Enter");
+  await expect(first).toHaveAttribute("aria-expanded", "true");
+  await expect(
+    chain.getByText("已核查 UTC 预约契约，原始文件未改变。", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    chain.getByText(fixtureState.run.id, { exact: true }),
+  ).toBeVisible();
+  expect(await dialog.innerText()).not.toContain(
+    fixtureState.run.data.leaseToken,
+  );
+  expect(writes).toEqual([]);
+  expect(
+    await dialog.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth + 1,
+    ),
+  ).toBeTruthy();
+});

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ArrowRight,
   Check,
@@ -14,13 +14,25 @@ import {
   Target,
   Workflow,
 } from "lucide-react";
-import { date, money, methods, roles, targets, type Data } from "../api";
+import {
+  date,
+  money,
+  methods,
+  roles,
+  targets,
+  type Data,
+  type Resource,
+} from "../api";
 import { Badge, Button, Confirm, Empty, Form, SectionHeading } from "../ui";
 import { useWorkspace } from "../context";
 import { GoalForm } from "../forms";
 import { SourceRecoveryActions } from "../SourceRecovery";
 import { SandboxRecovery } from "../SandboxRecovery";
-import { AgentProgressRecovery, AgentProgressStatus } from "../AgentProgress";
+import {
+  AgentExecutionSteps,
+  AgentProgressRecovery,
+  AgentProgressStatus,
+} from "../AgentProgress";
 import { MessageContext } from "../MessageContext";
 import { MessageWait } from "../MessageWait";
 import { Clarifications } from "../Clarifications";
@@ -31,6 +43,9 @@ import { Designs, DesignSummary } from "../Designs";
 import { AcceptanceTrace } from "../AcceptanceTrace";
 import { Blueprints, BlueprintSummary } from "../Blueprints";
 import { SourceWriteScope } from "../SourceWriteScope";
+import { TaskPresentation } from "../TaskPresentation";
+import { DeliveryOverview } from "../Overview";
+import { WorkbenchTabs } from "../WorkbenchTabs";
 
 function SourceDetails({ data, run }: { data: Data; run?: Data }) {
   const w = useWorkspace();
@@ -308,9 +323,46 @@ function TaskDetails({ taskId }: { taskId: string }) {
           <p className="muted">正式交付仍需独立质量验证和发布验收。</p>
         </section>
       )}
+      <AgentExecutionSteps task={task} />
       <MessageWait taskId={task.id} />
       <MessageContext taskId={task.id} />
     </div>
+  );
+}
+
+function ExecutionPresentation({
+  plan,
+  goalId,
+  children,
+}: {
+  plan?: Resource;
+  goalId: string;
+  children: ReactNode;
+}) {
+  const w = useWorkspace();
+  if (!plan) return children;
+  return (
+    <TaskPresentation
+      scope={{
+        projectId: w.project.id,
+        goalId,
+        planId: plan.id,
+        requirementRevision: plan.data.requirementRevision,
+      }}
+      plan={plan}
+      resources={w.items}
+      mode="execution"
+      label="执行工作项展示方式"
+      graphLabel="执行依赖图"
+      onOpenTask={(taskId) =>
+        w.open(
+          w.items.find((item) => item.id === taskId)?.title || "工作项详情",
+          <TaskDetails taskId={taskId} />,
+        )
+      }
+    >
+      {children}
+    </TaskPresentation>
   );
 }
 
@@ -344,7 +396,24 @@ export function Delivery() {
   const runs = w.select("run").filter((x) => x.goalId === g?.id);
   const pending =
     goals.filter((x) => x.status === "awaiting_baseline").length +
-    plans.filter((x) => x.status === "proposed").length;
+    w.select("plan").filter((plan) => plan.status === "proposed").length +
+    w
+      .select("release")
+      .filter((release) => release.status === "awaiting_approval").length;
+  const currentTasks = tasks.filter(
+    (task) =>
+      task.data.requirementRevision === g?.revision &&
+      (!activePlan || task.data.planId === activePlan.id),
+  );
+  const blockedTasks = currentTasks.filter((task) =>
+    [
+      "blocked",
+      "failed",
+      "waiting_message",
+      "suspended",
+      "awaiting_signature",
+    ].includes(task.status),
+  );
   return (
     <>
       <SectionHeading
@@ -361,26 +430,20 @@ export function Delivery() {
           </Button>
         }
       />
-      <div className="workspace-summary">
-        <span>
-          <span className="summary-number">{goals.length}</span>交付目标
-        </span>
-        <span>
-          <span className="summary-number">
-            {goals.filter((x) => x.status === "delivered").length}
-          </span>
-          已交付
-        </span>
-        <span>
-          <span className="summary-number">{pending}</span>待人工决策
-        </span>
-        <span className="summary-cost">
-          模型费用
-          <strong>
-            {money(goals.reduce((a, x) => a + (x.data.spentCents || 0), 0))}
-          </strong>
-        </span>
-      </div>
+      <DeliveryOverview goals={goals} tasks={currentTasks} pending={pending} />
+      {blockedTasks.length > 0 && (
+        <div className="attention-strip" role="status">
+          <div>
+            <strong>{blockedTasks.length} 个当前工作项需要关注</strong>
+            <small>
+              保留原始失败、协作等待与签名记录；不会自动跳过人工核对。
+            </small>
+          </div>
+          <Button secondary onClick={() => setTab("execution")}>
+            查看执行阻塞
+          </Button>
+        </div>
+      )}
       {!g ? (
         <Empty
           icon={<Target size={30} />}
@@ -457,411 +520,449 @@ export function Delivery() {
           </div>
           <div className="detail-layout">
             <div className="primary-detail">
-              <div className="tabs" role="tablist" aria-label="目标详情">
-                {[
+              <WorkbenchTabs
+                label="目标详情"
+                value={tab}
+                onChange={setTab}
+                indicators={proposed ? ["plan"] : []}
+                items={[
                   ["requirements", "需求基线"],
                   ["plan", "交付方案"],
                   ["execution", "执行记录"],
                   ["trace", "验收追溯"],
-                ].map(([k, v]) => (
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === k}
-                    key={k}
-                    className={tab === k ? "active" : ""}
-                    onClick={() => setTab(k)}
-                  >
-                    {v}
-                    {k === "plan" && proposed && <span className="tab-dot" />}
-                  </button>
-                ))}
-              </div>
-              {tab === "trace" && <AcceptanceTrace key={g.id} />}
-              {tab === "requirements" && (
-                <div className="detail-content">
-                  <div className="content-heading">
-                    <h3>业务结果</h3>
-                    <button
-                      type="button"
-                      className="text-button"
-                      onClick={() =>
-                        w.open("变更需求基线", <GoalForm goal={g} />)
-                      }
-                    >
-                      变更基线
-                      <ArrowRight size={13} />
-                    </button>
-                  </div>
-                  <p className="outcome-text">{g.data.outcome}</p>
-                  {g.data.requirementBrief && (
-                    <section aria-label="需求说明">
-                      <div className="content-heading spaced">
-                        <h3>需求说明</h3>
-                      </div>
-                      <p className="requirement-brief">
-                        {g.data.requirementBrief}
-                      </p>
-                    </section>
-                  )}
-                  <div className="content-heading spaced">
-                    <h3>验收标准</h3>
-                    <span className="muted">{g.data.criteria.length} 项</span>
-                  </div>
-                  <div className="criteria-list">
-                    {!g.data.criteria.length && (
-                      <p className="inline-empty">请先整理至少一项验收标准</p>
-                    )}
-                    {g.data.criteria.map((c: Data, i: number) => (
-                      <div className="criterion" key={c.id}>
-                        <span className="criterion-number">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <div>
-                          <p>{c.text}</p>
-                          <span className="mono subtle">{c.id}</span>
-                        </div>
-                        <span className="method-tag">
-                          {methods[c.method] || c.method}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="content-heading spaced">
-                    <h3>必选客户端与渠道</h3>
-                    <span className="muted">逐项验证</span>
-                  </div>
-                  <div className="target-tags">
-                    {g.data.targets.map((t: string) => (
-                      <span key={t}>
-                        <Layers3 size={13} />
-                        {targets[t]}
-                      </span>
-                    ))}
-                  </div>
-                  <Clarifications />
-                  <RequirementDrafts />
-                  {g.status === "awaiting_baseline" && (
-                    <div className="decision-panel">
-                      <FileCheck2 size={25} />
-                      <div>
-                        <strong>需求基线等待确认</strong>
-                        <p>确认业务范围和验收条件后，才能进入方案与执行。</p>
-                      </div>
-                      <Button
-                        disabled={
-                          unanswered > 0 ||
-                          !g.data.criteria.length ||
-                          w.actor.kind !== "human" ||
-                          !w.can("product")
-                        }
+                ]}
+              >
+                {tab === "trace" && <AcceptanceTrace key={g.id} />}
+                {tab === "requirements" && (
+                  <div className="detail-content">
+                    <div className="content-heading">
+                      <h3>业务结果</h3>
+                      <button
+                        type="button"
+                        className="text-button"
                         onClick={() =>
-                          w.open(
-                            "确认需求基线",
-                            <Confirm
-                              description={
-                                <>
-                                  <p>
-                                    批准 <strong>{g.title}</strong> 的需求基线 v
-                                    {g.revision}。
-                                  </p>
-                                  <p>
-                                    包含 {g.data.criteria.length} 项验收标准、
-                                    {g.data.targets.length} 个必选目标和{" "}
-                                    {money(g.data.budgetCents)} 预算。
-                                  </p>
-                                </>
-                              }
-                              onConfirm={async () => {
-                                await w.run("goals.approve", {
-                                  id: g.id,
-                                  expectedRequirementRevision: g.revision,
-                                });
-                                w.close();
-                              }}
-                            />,
-                          )
+                          w.open("变更需求基线", <GoalForm goal={g} />)
                         }
                       >
-                        审阅并确认
-                        <ArrowRight size={15} />
-                      </Button>
+                        变更基线
+                        <ArrowRight size={13} />
+                      </button>
                     </div>
-                  )}
-                </div>
-              )}
-              {tab === "plan" && (
-                <div className="detail-content">
-                  <Designs />
-                  <Blueprints key={"blueprints-" + g.id} />
-                  <PlanGeneration key={g.id} />
-                  {!plans.length ? (
-                    <Empty
-                      icon={<Workflow size={28} />}
-                      title="交付路径等待规划"
-                      description="需求确认后，可由 Agent 生成方案，或由架构师编制工作项、依赖与验证路径。"
-                    />
-                  ) : (
-                    plans.map((plan) => (
-                      <article
-                        className="plan-section"
-                        key={plan.id}
-                        aria-label={"交付方案 v" + plan.revision}
-                      >
-                        <div className="content-heading">
-                          <h4>方案 v{plan.revision}</h4>
-                          <Badge status={plan.status} />
+                    <p className="outcome-text">{g.data.outcome}</p>
+                    {g.data.requirementBrief && (
+                      <section aria-label="需求说明">
+                        <div className="content-heading spaced">
+                          <h3>需求说明</h3>
                         </div>
-                        <p className="outcome-text">{plan.data.summary}</p>
-                        <FrozenReleaseIssues
-                          entries={plan.data.releaseIssues}
-                        />
-                        <DesignSummary snapshot={plan.data.design} />
-                        <BlueprintSummary
-                          snapshot={plan.data.blueprint}
-                          initialize={plan.data.initializeBlueprint}
-                        />
-                        {plan.data.generationId && (
-                          <p className="form-note">
-                            由模型生成 · 需求 v{plan.data.requirementRevision} ·
-                            生成与费用来源见方案生成记录
-                          </p>
-                        )}
-                        {plan.data.risk && (
-                          <p className="risk-note">待关注 · {plan.data.risk}</p>
-                        )}
-                        <div className="plan-tasks">
-                          {plan.data.tasks.map((task: Data, i: number) => (
-                            <div className="plan-task" key={task.id}>
-                              <span className="task-step">
-                                {String(i + 1).padStart(2, "0")}
-                              </span>
-                              <div>
-                                <strong>{task.title}</strong>
-                                <small>
-                                  {roles[task.role]} · {task.runtime}
-                                  {task.dependsOn?.length
-                                    ? " · 依赖 " + task.dependsOn.join("、")
-                                    : ""}
-                                </small>
-                                <SourceWriteScope task={task} />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        {plan.status === "proposed" && (
-                          <div className="decision-panel compact">
-                            <div>
-                              <strong>需要架构负责人批准</strong>
-                              <p>
-                                批准后创建执行工作项，执行节点按权限和能力领取。
-                              </p>
-                            </div>
-                            <Button
-                              disabled={
-                                w.actor.kind !== "human" || !w.can("architect")
-                              }
-                              onClick={() =>
-                                w.open(
-                                  "批准交付方案",
-                                  <Confirm
-                                    description={
-                                      <>
-                                        <p>
-                                          批准方案 v{plan.revision} 并启动其中{" "}
-                                          {plan.data.tasks.length} 个工作项。
-                                        </p>
-                                        <p>
-                                          新方案会替代之前的方案，相关发布候选需要重新确认。
-                                        </p>
-                                        {plan.data.tasks
-                                          .filter(
-                                            (task: Data) =>
-                                              task.kind === "code",
-                                          )
-                                          .map((task: Data) => (
-                                            <section key={task.id}>
-                                              <strong>{task.title}</strong>
-                                              <SourceWriteScope task={task} />
-                                            </section>
-                                          ))}
-                                        <DesignSummary
-                                          snapshot={plan.data.design}
-                                        />
-                                        <FrozenReleaseIssues
-                                          entries={plan.data.releaseIssues}
-                                        />
-                                        <BlueprintSummary
-                                          snapshot={plan.data.blueprint}
-                                          initialize={
-                                            plan.data.initializeBlueprint
-                                          }
-                                        />
-                                      </>
-                                    }
-                                    onConfirm={async () => {
-                                      await w.run("plans.approve", {
-                                        id: plan.id,
-                                      });
-                                      w.close();
-                                      setTab("execution");
-                                    }}
-                                  />,
-                                )
-                              }
-                            >
-                              批准方案
-                              <Check size={15} />
-                            </Button>
+                        <p className="requirement-brief">
+                          {g.data.requirementBrief}
+                        </p>
+                      </section>
+                    )}
+                    <div className="content-heading spaced">
+                      <h3>验收标准</h3>
+                      <span className="muted">{g.data.criteria.length} 项</span>
+                    </div>
+                    <div className="criteria-list">
+                      {!g.data.criteria.length && (
+                        <p className="inline-empty">请先整理至少一项验收标准</p>
+                      )}
+                      {g.data.criteria.map((c: Data, i: number) => (
+                        <div className="criterion" key={c.id}>
+                          <span className="criterion-number">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <div>
+                            <p>{c.text}</p>
+                            <span className="mono subtle">{c.id}</span>
                           </div>
-                        )}
-                      </article>
-                    ))
-                  )}
-                </div>
-              )}
-              {tab === "execution" && (
-                <div className="detail-content">
-                  <div className="content-heading">
-                    <h3>工作项</h3>
-                    <span className="muted">
-                      {activePlan
-                        ? "当前方案 v" + activePlan.revision
-                        : "暂无活动方案"}
-                    </span>
+                          <span className="method-tag">
+                            {methods[c.method] || c.method}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="content-heading spaced">
+                      <h3>必选客户端与渠道</h3>
+                      <span className="muted">逐项验证</span>
+                    </div>
+                    <div className="target-tags">
+                      {g.data.targets.map((t: string) => (
+                        <span key={t}>
+                          <Layers3 size={13} />
+                          {targets[t]}
+                        </span>
+                      ))}
+                    </div>
+                    <Clarifications />
+                    <RequirementDrafts />
+                    {g.status === "awaiting_baseline" && (
+                      <div className="decision-panel">
+                        <FileCheck2 size={25} />
+                        <div>
+                          <strong>需求基线等待确认</strong>
+                          <p>确认业务范围和验收条件后，才能进入方案与执行。</p>
+                        </div>
+                        <Button
+                          disabled={
+                            unanswered > 0 ||
+                            !g.data.criteria.length ||
+                            w.actor.kind !== "human" ||
+                            !w.can("product")
+                          }
+                          onClick={() =>
+                            w.open(
+                              "确认需求基线",
+                              <Confirm
+                                description={
+                                  <>
+                                    <p>
+                                      批准 <strong>{g.title}</strong> 的需求基线
+                                      v{g.revision}。
+                                    </p>
+                                    <p>
+                                      包含 {g.data.criteria.length} 项验收标准、
+                                      {g.data.targets.length} 个必选目标和{" "}
+                                      {money(g.data.budgetCents)} 预算。
+                                    </p>
+                                  </>
+                                }
+                                onConfirm={async () => {
+                                  await w.run("goals.approve", {
+                                    id: g.id,
+                                    expectedRequirementRevision: g.revision,
+                                  });
+                                  w.close();
+                                }}
+                              />,
+                            )
+                          }
+                        >
+                          审阅并确认
+                          <ArrowRight size={15} />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <SandboxRecovery goalId={g.id} />
-                  <AgentProgressRecovery goalId={g.id} />
-                  {tasks.length ? (
-                    <div className="work-list">
-                      {tasks.map((task) => (
-                        <div className="work-row" key={task.id}>
-                          <div className="work-icon">
-                            {task.status === "succeeded" ? (
-                              <CheckCircle2 size={18} />
-                            ) : task.status === "running" ? (
-                              <LoaderCircle className="spin" size={18} />
-                            ) : (
-                              <Clock3 size={18} />
-                            )}
+                )}
+                {tab === "plan" && (
+                  <div className="detail-content">
+                    <Designs />
+                    <Blueprints key={"blueprints-" + g.id} />
+                    <PlanGeneration key={g.id} />
+                    {!plans.length ? (
+                      <Empty
+                        icon={<Workflow size={28} />}
+                        title="交付路径等待规划"
+                        description="需求确认后，可由 Agent 生成方案，或由架构师编制工作项、依赖与验证路径。"
+                      />
+                    ) : (
+                      plans.map((plan) => (
+                        <article
+                          className="plan-section"
+                          key={plan.id}
+                          aria-label={"交付方案 v" + plan.revision}
+                        >
+                          <div className="content-heading">
+                            <h4>方案 v{plan.revision}</h4>
+                            <Badge status={plan.status} />
                           </div>
-                          <div className="work-info">
-                            <button
-                              type="button"
-                              className="work-title"
-                              aria-label={"查看工作项：" + task.title}
-                              onClick={() =>
-                                w.open(
-                                  task.title,
-                                  <TaskDetails taskId={task.id} />,
-                                )
-                              }
-                            >
-                              <strong>{task.title}</strong>
-                            </button>
-                            <small>
-                              {roles[task.data.role]} · {task.data.runtime} ·
-                              尝试 {task.data.attempts}/{task.data.maxAttempts}
-                              {task.data.reason && (
-                                <span className="blocked-reason">
-                                  {task.data.reason}
-                                </span>
-                              )}
-                            </small>
-                            <SourceRecoveryActions task={task} />
-                            <AgentProgressStatus task={task} />
-                          </div>
-                          <Badge status={task.status} />
-                          {["failed", "blocked"].includes(task.status) &&
-                            !task.data.signingMode && (
-                              <button
-                                type="button"
-                                className="icon-button"
-                                aria-label="重试工作项"
+                          <p className="outcome-text">{plan.data.summary}</p>
+                          <FrozenReleaseIssues
+                            entries={plan.data.releaseIssues}
+                          />
+                          <DesignSummary snapshot={plan.data.design} />
+                          <BlueprintSummary
+                            snapshot={plan.data.blueprint}
+                            initialize={plan.data.initializeBlueprint}
+                          />
+                          {plan.data.generationId && (
+                            <p className="form-note">
+                              由模型生成 · 需求 v{plan.data.requirementRevision}{" "}
+                              · 生成与费用来源见方案生成记录
+                            </p>
+                          )}
+                          {plan.data.risk && (
+                            <p className="risk-note">
+                              待关注 · {plan.data.risk}
+                            </p>
+                          )}
+                          <TaskPresentation
+                            key={plan.id + "/" + plan.data.requirementRevision}
+                            scope={{
+                              projectId: w.project.id,
+                              goalId: g.id,
+                              planId: plan.id,
+                              requirementRevision:
+                                plan.data.requirementRevision,
+                            }}
+                            plan={plan}
+                            resources={w.items}
+                            mode="plan"
+                            label={"交付方案 v" + plan.revision + "展示方式"}
+                            graphLabel="方案依赖图"
+                            onOpenTask={(taskId) =>
+                              w.open(
+                                w.items.find((item) => item.id === taskId)
+                                  ?.title || "工作项详情",
+                                <TaskDetails taskId={taskId} />,
+                              )
+                            }
+                          >
+                            <div className="plan-tasks">
+                              {plan.data.tasks.map((task: Data, i: number) => (
+                                <div className="plan-task" key={task.id}>
+                                  <span className="task-step">
+                                    {String(i + 1).padStart(2, "0")}
+                                  </span>
+                                  <div>
+                                    <strong>{task.title}</strong>
+                                    <small>
+                                      {roles[task.role]} · {task.runtime}
+                                      {task.dependsOn?.length
+                                        ? " · 依赖 " + task.dependsOn.join("、")
+                                        : ""}
+                                    </small>
+                                    <SourceWriteScope task={task} />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </TaskPresentation>
+                          {plan.status === "proposed" && (
+                            <div className="decision-panel compact">
+                              <div>
+                                <strong>需要架构负责人批准</strong>
+                                <p>
+                                  批准后创建执行工作项，执行节点按权限和能力领取。
+                                </p>
+                              </div>
+                              <Button
                                 disabled={
                                   w.actor.kind !== "human" ||
-                                  !w.can(
-                                    ...(task.data.qualityPolicyId
-                                      ? ["quality"]
-                                      : ["architect", "developer"]),
-                                  )
+                                  !w.can("architect")
                                 }
                                 onClick={() =>
                                   w.open(
-                                    "重试工作项",
+                                    "批准交付方案",
                                     <Confirm
-                                      label="重试"
                                       description={
-                                        <p>
-                                          重试「{task.title}
-                                          」，保留此前失败记录。
-                                        </p>
+                                        <>
+                                          <p>
+                                            批准方案 v{plan.revision} 并启动其中{" "}
+                                            {plan.data.tasks.length} 个工作项。
+                                          </p>
+                                          <p>
+                                            新方案会替代之前的方案，相关发布候选需要重新确认。
+                                          </p>
+                                          {plan.data.tasks
+                                            .filter(
+                                              (task: Data) =>
+                                                task.kind === "code",
+                                            )
+                                            .map((task: Data) => (
+                                              <section key={task.id}>
+                                                <strong>{task.title}</strong>
+                                                <SourceWriteScope task={task} />
+                                              </section>
+                                            ))}
+                                          <DesignSummary
+                                            snapshot={plan.data.design}
+                                          />
+                                          <FrozenReleaseIssues
+                                            entries={plan.data.releaseIssues}
+                                          />
+                                          <BlueprintSummary
+                                            snapshot={plan.data.blueprint}
+                                            initialize={
+                                              plan.data.initializeBlueprint
+                                            }
+                                          />
+                                        </>
                                       }
                                       onConfirm={async () => {
-                                        await w.run("tasks.retry", {
-                                          id: task.id,
+                                        await w.run("plans.approve", {
+                                          id: plan.id,
                                         });
                                         w.close();
+                                        setTab("execution");
                                       }}
                                     />,
                                   )
                                 }
                               >
-                                <RotateCcw size={16} />
-                              </button>
-                            )}
-                        </div>
-                      ))}
+                                批准方案
+                                <Check size={15} />
+                              </Button>
+                            </div>
+                          )}
+                        </article>
+                      ))
+                    )}
+                  </div>
+                )}
+                {tab === "execution" && (
+                  <div className="detail-content">
+                    <div className="content-heading">
+                      <h3>工作项</h3>
+                      <span className="muted">
+                        {activePlan
+                          ? "当前方案 v" + activePlan.revision
+                          : "暂无活动方案"}
+                      </span>
                     </div>
-                  ) : (
-                    <Empty
-                      title="暂无执行工作项"
-                      description="批准交付方案后，平台会创建工作项。没有匹配的执行节点时，工作项保持等待。"
-                    />
-                  )}
-                  {runs.length > 0 && (
-                    <>
-                      <div className="content-heading spaced">
-                        <h3>执行历史</h3>
-                      </div>
-                      {runs.map((run) => (
-                        <button
-                          type="button"
-                          key={run.id}
-                          className="resource-row clickable"
-                          onClick={() =>
-                            w.open(
-                              run.title,
-                              <div className="detail-content">
-                                <Badge status={run.status} />
-                                <p>{run.data.progress || "尚无进度消息"}</p>
-                                <SourceDetails
-                                  data={run.data.task || {}}
-                                  run={run.data}
-                                />
-                                <MessageContext taskId={run.data.taskId} />
-                                <MessageWait taskId={run.data.taskId} />
-                                <pre className="code-block">
-                                  {run.data.log || "尚无执行日志"}
-                                </pre>
-                              </div>,
-                            )
-                          }
-                        >
-                          <span>
-                            {run.title}
-                            <small>
-                              {date(run.createdAt)} · {run.data.workerId}
-                            </small>
-                          </span>
-                          <Badge status={run.status} />
-                          <ArrowRight size={15} />
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
+                    <SandboxRecovery goalId={g.id} />
+                    <AgentProgressRecovery goalId={g.id} />
+                    <ExecutionPresentation
+                      key={g.id + "/" + (activePlan?.id || "none")}
+                      plan={activePlan}
+                      goalId={g.id}
+                    >
+                      {tasks.length ? (
+                        <div className="work-list">
+                          {tasks.map((task) => (
+                            <div className="work-row" key={task.id}>
+                              <div className="work-icon">
+                                {task.status === "succeeded" ? (
+                                  <CheckCircle2 size={18} />
+                                ) : task.status === "running" ? (
+                                  <LoaderCircle className="spin" size={18} />
+                                ) : (
+                                  <Clock3 size={18} />
+                                )}
+                              </div>
+                              <div className="work-info">
+                                <button
+                                  type="button"
+                                  className="work-title"
+                                  aria-label={"查看工作项：" + task.title}
+                                  onClick={() =>
+                                    w.open(
+                                      task.title,
+                                      <TaskDetails taskId={task.id} />,
+                                    )
+                                  }
+                                >
+                                  <strong>{task.title}</strong>
+                                </button>
+                                <small>
+                                  {roles[task.data.role]} · {task.data.runtime}{" "}
+                                  · 尝试 {task.data.attempts}/
+                                  {task.data.maxAttempts}
+                                  {task.data.reason && (
+                                    <span className="blocked-reason">
+                                      {task.data.reason}
+                                    </span>
+                                  )}
+                                </small>
+                                <SourceRecoveryActions task={task} />
+                                <AgentProgressStatus task={task} />
+                              </div>
+                              <Badge status={task.status} />
+                              {["failed", "blocked"].includes(task.status) &&
+                                !task.data.signingMode && (
+                                  <button
+                                    type="button"
+                                    className="icon-button"
+                                    aria-label="重试工作项"
+                                    disabled={
+                                      w.actor.kind !== "human" ||
+                                      !w.can(
+                                        ...(task.data.qualityPolicyId
+                                          ? ["quality"]
+                                          : ["architect", "developer"]),
+                                      )
+                                    }
+                                    onClick={() =>
+                                      w.open(
+                                        "重试工作项",
+                                        <Confirm
+                                          label="重试"
+                                          description={
+                                            <p>
+                                              重试「{task.title}
+                                              」，保留此前失败记录。
+                                            </p>
+                                          }
+                                          onConfirm={async () => {
+                                            await w.run("tasks.retry", {
+                                              id: task.id,
+                                            });
+                                            w.close();
+                                          }}
+                                        />,
+                                      )
+                                    }
+                                  >
+                                    <RotateCcw size={16} />
+                                  </button>
+                                )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <Empty
+                          title="暂无执行工作项"
+                          description="批准交付方案后，平台会创建工作项。没有匹配的执行节点时，工作项保持等待。"
+                        />
+                      )}
+                    </ExecutionPresentation>
+                    {runs.length > 0 && (
+                      <>
+                        <div className="content-heading spaced">
+                          <h3>执行历史</h3>
+                        </div>
+                        {runs.map((run) => (
+                          <button
+                            type="button"
+                            key={run.id}
+                            className="resource-row clickable"
+                            onClick={() =>
+                              w.open(
+                                run.title,
+                                <div className="detail-content">
+                                  <Badge status={run.status} />
+                                  <p>{run.data.progress || "尚无进度消息"}</p>
+                                  <SourceDetails
+                                    data={run.data.task || {}}
+                                    run={run.data}
+                                  />
+                                  <MessageContext taskId={run.data.taskId} />
+                                  <MessageWait taskId={run.data.taskId} />
+                                  {w.items.find(
+                                    (item) => item.id === run.data.taskId,
+                                  ) && (
+                                    <AgentExecutionSteps
+                                      task={
+                                        w.items.find(
+                                          (item) => item.id === run.data.taskId,
+                                        )!
+                                      }
+                                      runId={run.id}
+                                    />
+                                  )}
+                                  <pre className="code-block">
+                                    {run.data.log || "尚无执行日志"}
+                                  </pre>
+                                </div>,
+                              )
+                            }
+                          >
+                            <span>
+                              {run.title}
+                              <small>
+                                {date(run.createdAt)} · {run.data.workerId}
+                              </small>
+                            </span>
+                            <Badge status={run.status} />
+                            <ArrowRight size={15} />
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </WorkbenchTabs>
             </div>
             <aside className="goal-inspector">
               <h3>交付上下文</h3>

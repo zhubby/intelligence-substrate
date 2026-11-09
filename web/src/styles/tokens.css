@@ -1,0 +1,117 @@
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+
+@custom-variant dark (&:where([data-mantine-color-scheme="dark"], [data-mantine-color-scheme="dark"] *));
+
+@font-face {
+  font-family: "Noto Sans SC";
+  src: url("/fonts/NotoSansSC-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root,
+:root[data-mantine-color-scheme="dark"] {
+  --font-body:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC",
+    sans-serif;
+  --font-code:
+    "SFMono-Regular", Consolas, "Liberation Mono", "Noto Sans SC", monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --focus-width: 2px;
+  --page: #0c1017;
+  --surface: #121a27;
+  --surface-subtle: #101722;
+  --surface-raised: #192334;
+  --surface-hover: #202d40;
+  --sidebar-bg: #0e1520;
+  --ink: #e8edf5;
+  --ink-soft: #bac6d8;
+  --muted: #96a5bb;
+  --line: #283449;
+  --line-soft: #202b3d;
+  --accent: #43d7e8;
+  --accent-hover: #80e4f3;
+  --accent-soft: #122f3a;
+  --on-accent: #06232e;
+  --success: #6de0b0;
+  --success-soft: #11372d;
+  --warning: #f4c16b;
+  --warning-soft: #352c1c;
+  --danger: #ff9b9b;
+  --danger-soft: #3c222d;
+  --info: #8eb9ff;
+  --info-soft: #1c2c47;
+  --code-bg: #0a111c;
+  --shadow-panel: 0 6px 24px rgb(0 0 0 / 0.12);
+  --shadow-overlay: 0 20px 80px rgb(0 0 0 / 0.45);
+  --nav: 240px;
+  color-scheme: dark;
+}
+
+:root[data-mantine-color-scheme="light"] {
+  --page: #f3f5f9;
+  --surface: #ffffff;
+  --surface-subtle: #f7f9fc;
+  --surface-raised: #ffffff;
+  --surface-hover: #eaf0f7;
+  --sidebar-bg: #fafbfd;
+  --ink: #17253c;
+  --ink-soft: #3d506b;
+  --muted: #596b83;
+  --line: #d8e1ed;
+  --line-soft: #e6ebf3;
+  --accent: #087e95;
+  --accent-hover: #075f73;
+  --accent-soft: #e2f4f8;
+  --on-accent: #ffffff;
+  --success: #14764f;
+  --success-soft: #e6f5ee;
+  --warning: #89570d;
+  --warning-soft: #fff3dc;
+  --danger: #be354d;
+  --danger-soft: #fcebf0;
+  --info: #3265bd;
+  --info-soft: #eaf1ff;
+  --code-bg: #edf2f9;
+  --shadow-panel: 0 4px 18px rgb(31 52 84 / 0.04);
+  --shadow-overlay: 0 20px 80px rgb(31 52 84 / 0.2);
+  color-scheme: light;
+}
+
+html {
+  background: var(--page);
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

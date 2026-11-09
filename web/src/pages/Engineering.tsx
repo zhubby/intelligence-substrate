@@ -20,6 +20,7 @@ import { EvidenceForm, UploadForm } from "../forms";
 import { QualityBindingButton, QualityScheduling } from "../QualityScheduling";
 import { DevelopmentPreviews } from "../DevelopmentPreviews";
 import { SigningRepair } from "../SigningRepair";
+import { CodeOverview, QualityOverview } from "../Overview";
 
 export function Code() {
   const w = useWorkspace();
@@ -88,6 +89,7 @@ export function Code() {
           </Button>
         }
       />
+      <CodeOverview repositories={repos} reviews={w.select("review")} />
       {!current ? (
         <Empty
           icon={<FolderGit2 size={30} />}
@@ -379,6 +381,23 @@ export function Quality() {
             </Button>
           </div>
         }
+      />
+      <QualityOverview
+        tasks={w
+          .select("task")
+          .filter(
+            (task) =>
+              !w.goal ||
+              (task.goalId === w.goal.id &&
+                task.data.requirementRevision === w.goal.revision),
+          )}
+        evidence={evidence.filter(
+          (record) =>
+            !w.goal || record.data.requirementRevision === w.goal.revision,
+        )}
+        defects={w
+          .select("defect")
+          .filter((defect) => !w.goal || defect.goalId === w.goal.id)}
       />
       <QualityScheduling />
       <div className="section-line">

@@ -125,7 +125,7 @@ rtk proxy python3 -m unittest discover -s scripts -p 'test_*.py' -v
 
 `IS_TEST_POSTGRES_URL` 指向专用测试数据库时才运行 PostgreSQL 集成场景；不会连接默认系统数据库。测试数据保留在该专用库中。[GitHub Actions](https://github.com/zhubby/intelligence-substrate/actions) 执行 Go/PostgreSQL、Python、桌面与移动浏览器及生产容器恢复检查；全部通过后发布 AMD64/ARM64 镜像到 `ghcr.io/zhubby/intelligence-substrate`，含完整提交标签、SBOM 和 provenance。具体通过状态以对应提交的运行结果为准。Kubernetes 与本机 OrbStack kind 的 HTTPS 部署见[部署手册](docs/kubernetes.md)。
 
-`test:e2e` 使用 `scripts/verify-workbench.py`，为每个测试文件/宽度创建独立状态与服务，构建到新的 `work/` 目录。需求澄清、需求稿、设计、方案生成和费用场景只使用本机确定性模型，其他场景保持模型未配置；测试不会使用现有预览或外部模型配置。可用 `-- --suite designs` 选择场景，`--projects desktop` 选择宽度，报告位置会打印到终端。直接 Playwright 默认配置只包含不需要模型测试服务的场景。
+`test:e2e` 使用 `scripts/verify-workbench.py`，为每个测试文件/宽度/主题创建独立状态与服务，构建到新的 `work/` 目录。需求澄清、需求稿、设计、方案生成和费用场景只使用本机确定性模型，其他场景保持模型未配置；测试不会使用现有预览或外部模型配置。可用 `-- --suite designs` 选择场景，`--projects desktop tablet mobile` 选择 1440/768/390px，`--themes dark light` 验证双主题，报告位置会打印到终端。直接 Playwright 默认配置只包含不需要模型测试服务的场景。组件归属、只读图、指标口径和验收方式见[双主题交付控制台](docs/workbench-ui.md)。
 
 ## 文档
 

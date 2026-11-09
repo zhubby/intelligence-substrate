@@ -2,6 +2,34 @@ import { useEffect, useRef, useState } from "react";
 import { type Resource } from "./api";
 import { useWorkspace } from "./context";
 import { Button } from "./ui";
+import { RecordedSteps } from "./Specialist";
+
+export function AgentExecutionSteps({
+  task,
+  runId,
+}: {
+  task: Resource;
+  runId?: string;
+}) {
+  const w = useWorkspace();
+  const steps = w
+    .select("agent_step")
+    .filter(
+      (step) =>
+        step.projectId === task.projectId &&
+        step.goalId === task.goalId &&
+        step.data.taskId === task.id &&
+        step.data.planId === task.data.planId &&
+        step.data.requirementRevision === task.data.requirementRevision &&
+        (!runId || step.data.runId === runId),
+    )
+    .sort(
+      (first, second) =>
+        first.createdAt.localeCompare(second.createdAt) ||
+        Number(first.data.step) - Number(second.data.step),
+    );
+  return <RecordedSteps steps={steps} />;
+}
 
 export function AgentProgressRecovery({ goalId }: { goalId: string }) {
   const w = useWorkspace();
